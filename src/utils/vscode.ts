@@ -51,7 +51,11 @@ interface DocumentChange {
 
 // given an array of cumulative line lengths, find the line number given a character position after a known start line.
 // return the line as well as the number of characters until the start of the line.
-function findLine(lineLengths: number[], pos: number, startLine: number): [number, number] {
+function findLine(
+    lineLengths: number[],
+    pos: number,
+    startLine: number,
+): [number, number] {
     let low = startLine,
         high = lineLengths.length - 1;
     while (low < high) {
@@ -71,7 +75,10 @@ function findLine(lineLengths: number[], pos: number, startLine: number): [numbe
 // Assuming the operations are sequential, we can use a binary search to find the line number given a character position,
 // with the search space being the cumulative line lengths, bounded on the left by the last line.
 // Then, given a character position, we can start counting from the cursor to find the line number, and the remainder is the character position on the line.
-export function* calcDiffWithPosition(oldText: string, newText: string): Generator<DocumentChange> {
+export function* calcDiffWithPosition(
+    oldText: string,
+    newText: string,
+): Generator<DocumentChange> {
     const patch = calcPatch(oldText, newText);
     // generate prefix sum of line lengths (accumulate the length)
     const lines = oldText.split("\n");
@@ -83,11 +90,18 @@ export function* calcDiffWithPosition(oldText: string, newText: string): Generat
     }
     let lastLine = 0;
     for (const [start, end, text] of patch) {
-        const [lineStart, charToLineStart] = findLine(lineLengths, start, lastLine);
+        const [lineStart, charToLineStart] = findLine(
+            lineLengths,
+            start,
+            lastLine,
+        );
         const [lineEnd, charToLineEnd] = findLine(lineLengths, end, lineStart);
         const charStart = start - charToLineStart;
         const charEnd = end - charToLineEnd;
-        const range = new Range(new Position(lineStart, charStart), new Position(lineEnd, charEnd));
+        const range = new Range(
+            new Position(lineStart, charStart),
+            new Position(lineEnd, charEnd),
+        );
         lastLine = lineEnd;
         yield {
             range,
@@ -112,18 +126,28 @@ export function getDocumentLineArray(doc: TextDocument): string[] {
     return doc.getText().split(eol);
 }
 
-export function convertVimPositionToEditorPosition(editor: TextEditor, vimPos: Position): Position {
+export function convertVimPositionToEditorPosition(
+    editor: TextEditor,
+    vimPos: Position,
+): Position {
     const line = editor.document.lineAt(vimPos.line).text;
     const character = convertByteNumToCharNum(line, vimPos.character);
     return new Position(vimPos.line, character);
 }
-export function convertEditorPositionToVimPosition(editor: TextEditor, editorPos: Position): Position {
+export function convertEditorPositionToVimPosition(
+    editor: TextEditor,
+    editorPos: Position,
+): Position {
     const line = editor.document.lineAt(editorPos.line).text;
     const byte = convertCharNumToByteNum(line, editorPos.character);
     return new Position(editorPos.line, byte);
 }
 
-export function isCursorChange(change: TextDocumentContentChangeEvent, cursor: Position, eol: string): boolean {
+export function isCursorChange(
+    change: TextDocumentContentChangeEvent,
+    cursor: Position,
+    eol: string,
+): boolean {
     if (change.range.contains(cursor)) {
         return true;
     }
@@ -131,15 +155,22 @@ export function isCursorChange(change: TextDocumentContentChangeEvent, cursor: P
         const lines = change.text.split(eol);
         const lineLength = lines.length;
         const newEndLineRange = change.range.start.line + lineLength - 1;
-        const newEndLastLineCharRange = change.range.end.character + lines.slice(-1)[0].length;
-        if (newEndLineRange >= cursor.line && newEndLastLineCharRange >= cursor.character) {
+        const newEndLastLineCharRange =
+            change.range.end.character + lines.slice(-1)[0].length;
+        if (
+            newEndLineRange >= cursor.line &&
+            newEndLastLineCharRange >= cursor.character
+        ) {
             return true;
         }
     }
     return false;
 }
 
-export function normalizeDotRepeatChange(change: TextDocumentContentChangeEvent, eol: string): DotRepeatChange {
+export function normalizeDotRepeatChange(
+    change: TextDocumentContentChangeEvent,
+    eol: string,
+): DotRepeatChange {
     return {
         rangeLength: change.rangeLength,
         rangeOffset: change.rangeOffset,
@@ -168,11 +199,14 @@ export function accumulateDotRepeatChange(
               0
             : change.rangeOffset - lastChange.rangeOffset;
 
-    const sliceAfterStart = change.rangeOffset - lastChange.rangeOffset + removedLength;
+    const sliceAfterStart =
+        change.rangeOffset - lastChange.rangeOffset + removedLength;
 
     // adjust text
     newLastChange.text =
-        lastChange.text.slice(sliceBeforeStart, sliceBeforeEnd) + change.text + lastChange.text.slice(sliceAfterStart);
+        lastChange.text.slice(sliceBeforeStart, sliceBeforeEnd) +
+        change.text +
+        lastChange.text.slice(sliceAfterStart);
 
     // adjust offset & range length
     // we need to account the case only when text was deleted before the original change
@@ -191,7 +225,10 @@ export function isChangeSubsequentToChange(
     const lastChangeOffsetStart = lastChange.rangeOffset;
     const lastChangeOffsetEnd = lastChange.rangeOffset + lastChangeTextLength;
 
-    if (change.rangeOffset >= lastChangeOffsetStart && change.rangeOffset <= lastChangeOffsetEnd) {
+    if (
+        change.rangeOffset >= lastChangeOffsetStart &&
+        change.rangeOffset <= lastChangeOffsetEnd
+    ) {
         return true;
     }
 
@@ -236,10 +273,16 @@ export function rangesToSelections(
  * @returns WSL path
  */
 export const wslpath = (path: string) => {
-    const distroArgs = config.wslDistribution.length ? ["-d", config.wslDistribution] : [];
-    const result = spawnSync("C:\\Windows\\system32\\wsl.exe", [...distroArgs, "wslpath", path], {
-        encoding: "utf-8",
-    });
+    const distroArgs = config.wslDistribution.length
+        ? ["-d", config.wslDistribution]
+        : [];
+    const result = spawnSync(
+        "C:\\Windows\\system32\\wsl.exe",
+        [...distroArgs, "wslpath", path],
+        {
+            encoding: "utf-8",
+        },
+    );
     if (result.error) {
         throw new Error(`Failed to run wslpath: ${result.error.message}`);
     }
@@ -256,7 +299,10 @@ type VSCodeContextValue = boolean | string | string[];
 export abstract class VSCodeContext {
     private static readonly cache: Map<string, VSCodeContextValue> = new Map();
 
-    public static async set(key: string, value?: VSCodeContextValue): Promise<void> {
+    public static async set(
+        key: string,
+        value?: VSCodeContextValue,
+    ): Promise<void> {
         const prev = this.get(key);
         if (prev !== value) {
             if (value === undefined) {

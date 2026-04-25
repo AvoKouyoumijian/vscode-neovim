@@ -23,7 +23,9 @@ describe("Multi-width characters", () => {
     });
 
     it("Works - 2col width chars", async () => {
-        await openTextDocument({ content: ["测试微服务", "", "没办法跳转到最后一个"].join("\n") });
+        await openTextDocument({
+            content: ["测试微服务", "", "没办法跳转到最后一个"].join("\n"),
+        });
 
         await assertContent(
             {
@@ -68,7 +70,9 @@ describe("Multi-width characters", () => {
     });
 
     it("Works - 1col-2byte width chars", async () => {
-        await openTextDocument({ content: ["żżżżżżżż',", "ńńńńńńńń',"].join("\n") });
+        await openTextDocument({
+            content: ["żżżżżżżż',", "ńńńńńńńń',"].join("\n"),
+        });
 
         await assertContent(
             {
@@ -116,7 +120,9 @@ describe("Multi-width characters", () => {
     });
 
     it("Cursor is ok after exiting insert mode - 2 col chars", async () => {
-        await openTextDocument({ content: ["测试微服务", "", "没办法跳转到最后一个"].join("\n") });
+        await openTextDocument({
+            content: ["测试微服务", "", "没办法跳转到最后一个"].join("\n"),
+        });
 
         await sendVSCodeKeys("lll");
         await assertContent(
@@ -137,7 +143,9 @@ describe("Multi-width characters", () => {
     });
 
     it("Cursor is ok after exiting insert mode - 1col-2byte chars", async () => {
-        await openTextDocument({ content: ["żżżżżżżż',", "ńńńńńńńń',"].join("\n") });
+        await openTextDocument({
+            content: ["żżżżżżżż',", "ńńńńńńńń',"].join("\n"),
+        });
 
         await sendVSCodeKeys("lll");
         await assertContent(
@@ -247,11 +255,16 @@ describe("Multi-width characters", () => {
         );
 
         await sendVSCodeKeys("ci(");
-        await assertContent({ vsCodeCursor: [0, 26], content: ["ŷaŷbŷcŷd = functionŷ()"] }, client);
+        await assertContent(
+            { vsCodeCursor: [0, 26], content: ["ŷaŷbŷcŷd = functionŷ()"] },
+            client,
+        );
     });
 
     it("Works - Emoji chars", async () => {
-        await openTextDocument({ content: ["🚀🕵️💡🤣", "", "🕵️🕵️🕵️🕵️"].join("\n") });
+        await openTextDocument({
+            content: ["🚀🕵️💡🤣", "", "🕵️🕵️🕵️🕵️"].join("\n"),
+        });
 
         await assertContent(
             {

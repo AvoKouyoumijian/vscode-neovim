@@ -88,7 +88,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Deleting lines - backspace", async () => {
-        await openTextDocument({ content: ["blah1", "", "", "blah2", "", "", "", "blah3"].join("\n") });
+        await openTextDocument({
+            content: ["blah1", "", "", "blah2", "", "", "", "blah3"].join("\n"),
+        });
 
         await sendVSCodeKeys("jjj");
         await sendInsertKey("i");
@@ -120,7 +122,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Deleting lines - del", async () => {
-        await openTextDocument({ content: ["blah1", "", "", "blah2"].join("\n") });
+        await openTextDocument({
+            content: ["blah1", "", "", "blah2"].join("\n"),
+        });
 
         await sendInsertKey("A");
         await sendVSCodeSpecialKey("delete");
@@ -149,7 +153,9 @@ describe("Insert mode and buffer synchronization", () => {
         await openTextDocument({ content: ["blah1", "", "blah2"].join("\n") });
 
         await sendVSCodeKeys("ji");
-        await vscode.window.activeTextEditor!.insertSnippet(new vscode.SnippetString("while ($1) {\n$2\n}"));
+        await vscode.window.activeTextEditor!.insertSnippet(
+            new vscode.SnippetString("while ($1) {\n$2\n}"),
+        );
         await wait(200);
         await sendEscapeKey();
 
@@ -163,7 +169,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Changes after inserting and deleting newlines", async () => {
-        await openTextDocument({ content: ["blah1", "", "", "blah2", "", "blah3"].join("\n") });
+        await openTextDocument({
+            content: ["blah1", "", "", "blah2", "", "blah3"].join("\n"),
+        });
 
         // go to end of blah2
         await sendVSCodeKeys("jjj");
@@ -195,7 +203,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Deleting multiple lines", async () => {
-        await openTextDocument({ content: ["blah1", "", "", "blah2", "", "blah3"].join("\n") });
+        await openTextDocument({
+            content: ["blah1", "", "", "blah2", "", "blah3"].join("\n"),
+        });
 
         await sendVSCodeKeys("jjj");
         await sendInsertKey("A");
@@ -214,7 +224,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Replacing multiple lines - line num doesn't change", async () => {
-        await openTextDocument({ content: ["a", "b", "blah1", "blah2"].join("\n") });
+        await openTextDocument({
+            content: ["a", "b", "blah1", "blah2"].join("\n"),
+        });
 
         await sendInsertKey("i");
         await setSelection(new Selection(0, 0, 1, 1));
@@ -233,7 +245,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Replacing multiple lines - line num increases", async () => {
-        await openTextDocument({ content: ["a", "b", "blah1", "blah2"].join("\n") });
+        await openTextDocument({
+            content: ["a", "b", "blah1", "blah2"].join("\n"),
+        });
 
         await sendInsertKey();
         await setSelection(new Selection(0, 0, 1, 1));
@@ -253,7 +267,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Replacing multiple lines - line num decreases", async () => {
-        await openTextDocument({ content: ["a", "b", "blah1", "blah2"].join("\n") });
+        await openTextDocument({
+            content: ["a", "b", "blah1", "blah2"].join("\n"),
+        });
 
         await sendInsertKey();
         await setSelection(new Selection(0, 0, 0, 1));
@@ -329,7 +345,9 @@ describe("Insert mode and buffer synchronization", () => {
     });
 
     it("Complex change - 1", async () => {
-        await openTextDocument({ content: ["1", "2", "3", "4", "5", "6", "7", "8", "9"].join("\n") });
+        await openTextDocument({
+            content: ["1", "2", "3", "4", "5", "6", "7", "8", "9"].join("\n"),
+        });
 
         await sendVSCodeKeys("jji"); // at beginning "3"
         await sendVSCodeSpecialKey("delete");
@@ -353,7 +371,19 @@ describe("Insert mode and buffer synchronization", () => {
 
         await assertContent(
             {
-                content: ["1", "2", " 3", " 4", " 5", " 5.1", "6", "6.1", "6.2", "7", "9"],
+                content: [
+                    "1",
+                    "2",
+                    " 3",
+                    " 4",
+                    " 5",
+                    " 5.1",
+                    "6",
+                    "6.1",
+                    "6.2",
+                    "7",
+                    "9",
+                ],
             },
             client,
         );
@@ -483,7 +513,9 @@ describe("Insert mode and buffer synchronization", () => {
         this.retries(0);
 
         const badDoc = await vscode.workspace.openTextDocument({ content: "" });
-        const testDoc = await vscode.workspace.openTextDocument({ content: '"h1"' });
+        const testDoc = await vscode.workspace.openTextDocument({
+            content: '"h1"',
+        });
 
         const badEditor = await vscode.window.showTextDocument(badDoc);
         await vscode.window.showTextDocument(testDoc, vscode.ViewColumn.Beside);
@@ -492,7 +524,9 @@ describe("Insert mode and buffer synchronization", () => {
         await sendVSCodeKeys("gg0ll");
 
         const timer = setInterval(() => {
-            badEditor.edit((edit) => edit.insert(new vscode.Position(0, 0), "hello world\n"));
+            badEditor.edit((edit) =>
+                edit.insert(new vscode.Position(0, 0), "hello world\n"),
+            );
         }, 50);
 
         await wait(500);

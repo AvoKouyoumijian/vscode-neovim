@@ -24,30 +24,37 @@ export async function run(): Promise<void> {
     const testsRoot = path.resolve(__dirname, "..");
 
     return new Promise((c, e) => {
-        return vscode.workspace.findFiles(new vscode.RelativePattern(vscode.Uri.file(testsRoot), "**/**.test.js")).then(
-            (testFiles) => {
-                // Add files to the test suite, in alphanumeric order.
-                testFiles.sort((a, b) => a.fsPath.localeCompare(b.fsPath));
-                for (const f of testFiles) {
-                    mocha.addFile(path.resolve(testsRoot, f.fsPath));
-                }
+        return vscode.workspace
+            .findFiles(
+                new vscode.RelativePattern(
+                    vscode.Uri.file(testsRoot),
+                    "**/**.test.js",
+                ),
+            )
+            .then(
+                (testFiles) => {
+                    // Add files to the test suite, in alphanumeric order.
+                    testFiles.sort((a, b) => a.fsPath.localeCompare(b.fsPath));
+                    for (const f of testFiles) {
+                        mocha.addFile(path.resolve(testsRoot, f.fsPath));
+                    }
 
-                try {
-                    // Run the mocha test
-                    mocha.run((failures) => {
-                        if (failures > 0) {
-                            e(new Error(`${failures} tests failed.`));
-                        } else {
-                            c();
-                        }
-                    });
-                } catch (err) {
+                    try {
+                        // Run the mocha test
+                        mocha.run((failures) => {
+                            if (failures > 0) {
+                                e(new Error(`${failures} tests failed.`));
+                            } else {
+                                c();
+                            }
+                        });
+                    } catch (err) {
+                        e(err);
+                    }
+                },
+                (err) => {
                     e(err);
-                }
-            },
-            (err) => {
-                e(err);
-            },
-        );
+                },
+            );
     });
 }

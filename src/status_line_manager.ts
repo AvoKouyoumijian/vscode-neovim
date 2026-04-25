@@ -5,7 +5,10 @@ import { EventBusData, eventBus } from "./eventBus";
 import { MainController } from "./main_controller";
 import { disposeAll } from "./utils";
 import { createLogger } from "./logger";
-import { ClearAction, StatusLineMessageTimer } from "./status_line/status_line_message_timer";
+import {
+    ClearAction,
+    StatusLineMessageTimer,
+} from "./status_line/status_line_message_timer";
 
 const logger = createLogger("StatusLineManager");
 
@@ -36,7 +39,11 @@ export class StatusLineManager implements Disposable {
     }
 
     public constructor(private main: MainController) {
-        this.statusBar = window.createStatusBarItem("vscode-neovim-status", StatusBarAlignment.Left, -10);
+        this.statusBar = window.createStatusBarItem(
+            "vscode-neovim-status",
+            StatusBarAlignment.Left,
+            -10,
+        );
         this.statusBar.show();
         this.messageDisplayTimer = new StatusLineMessageTimer(() => {
             logger.debug("Clearing statusline after timer expiry");
@@ -47,7 +54,9 @@ export class StatusLineManager implements Disposable {
             this.statusBar,
             this.messageDisplayTimer,
             eventBus.on("redraw", this.handleRedraw, this),
-            eventBus.on("statusline", ([status]) => this.setStatus(status, StatusType.StatusLine)),
+            eventBus.on("statusline", ([status]) =>
+                this.setStatus(status, StatusType.StatusLine),
+            ),
         );
     }
 
@@ -135,7 +144,9 @@ export class StatusLineManager implements Disposable {
                 return str;
             }
 
-            const flattenedContent = content.map(([_code, msg]) => msg).join("");
+            const flattenedContent = content
+                .map(([_code, msg]) => msg)
+                .join("");
             if (replace) {
                 return flattenedContent;
             }
@@ -153,7 +164,9 @@ export class StatusLineManager implements Disposable {
                 logger.debug("Clearing statusline after event");
                 break;
             case ClearAction.StagedClear:
-                logger.debug("Skipping statusline clear as a message is currently pending");
+                logger.debug(
+                    "Skipping statusline clear as a message is currently pending",
+                );
                 break;
         }
     }
@@ -163,7 +176,9 @@ export class StatusLineManager implements Disposable {
             throw new Error("Expected a msg_show event");
         }
 
-        const returnPrompt = args.find(([type, _content]) => type === "return_prompt");
+        const returnPrompt = args.find(
+            ([type, _content]) => type === "return_prompt",
+        );
         if (returnPrompt) {
             this.client.input("<CR>");
         }

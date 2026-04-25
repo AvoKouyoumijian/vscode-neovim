@@ -32,7 +32,11 @@ export class Mode {
     }
     // visual mode name
     public get visual(): "char" | "line" | "block" {
-        return this.char === "V" ? "line" : this.shortname.charAt(0) === "v" ? "char" : "block";
+        return this.char === "V"
+            ? "line"
+            : this.shortname.charAt(0) === "v"
+              ? "char"
+              : "block";
     }
     public get isVisual(): boolean {
         return this.name === "visual";

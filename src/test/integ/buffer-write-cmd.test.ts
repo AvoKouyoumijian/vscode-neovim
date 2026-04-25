@@ -27,7 +27,10 @@ describe("BufWriteCmd integration", () => {
     };
     const cleanupFolder = async (uri: Uri) => {
         try {
-            await workspace.fs.delete(uri, { recursive: true, useTrash: false });
+            await workspace.fs.delete(uri, {
+                recursive: true,
+                useTrash: false,
+            });
         } catch {
             // ignore
         }
@@ -47,7 +50,10 @@ describe("BufWriteCmd integration", () => {
         const uri = Uri.file(path.join(process.cwd(), getRandomString()));
         cleanupCallbacks.push(() => cleanupFile(uri));
         testFiles.push(uri);
-        await workspace.fs.writeFile(uri, new TextEncoder().encode("hello world"));
+        await workspace.fs.writeFile(
+            uri,
+            new TextEncoder().encode("hello world"),
+        );
         const doc = await workspace.openTextDocument(uri);
         assert.equal(doc.getText(), "hello world");
         await window.showTextDocument(doc);
@@ -59,30 +65,38 @@ describe("BufWriteCmd integration", () => {
     //   /a/b
     //   /c/test
     // where "/a/b" is a symbolic link to "/c" and "/c/test" is a regular file.
-    const openTestFileInSymlinkedWorkspace = async (): Promise<TextDocument> => {
-        const folderAPath = path.join(process.cwd(), getRandomString());
-        const folderBPath = path.join(folderAPath, getRandomString());
-        const testFileSymbolicUri = Uri.file(path.join(folderBPath, "test"));
-        const folderCPath = path.join(process.cwd(), getRandomString());
-        const testFilePhysicalUri = Uri.file(path.join(folderCPath, "test"));
+    const openTestFileInSymlinkedWorkspace =
+        async (): Promise<TextDocument> => {
+            const folderAPath = path.join(process.cwd(), getRandomString());
+            const folderBPath = path.join(folderAPath, getRandomString());
+            const testFileSymbolicUri = Uri.file(
+                path.join(folderBPath, "test"),
+            );
+            const folderCPath = path.join(process.cwd(), getRandomString());
+            const testFilePhysicalUri = Uri.file(
+                path.join(folderCPath, "test"),
+            );
 
-        await workspace.fs.createDirectory(Uri.file(folderAPath));
-        await workspace.fs.createDirectory(Uri.file(folderCPath));
-        try {
-            await symlink(folderCPath, folderBPath, "dir");
-        } catch (_) {
-            // ignore, test is called multiple times at once
-        }
-        cleanupCallbacks.push(() => cleanupFolder(Uri.file(folderCPath)));
-        cleanupCallbacks.push(() => cleanupFolder(Uri.file(folderAPath)));
+            await workspace.fs.createDirectory(Uri.file(folderAPath));
+            await workspace.fs.createDirectory(Uri.file(folderCPath));
+            try {
+                await symlink(folderCPath, folderBPath, "dir");
+            } catch (_) {
+                // ignore, test is called multiple times at once
+            }
+            cleanupCallbacks.push(() => cleanupFolder(Uri.file(folderCPath)));
+            cleanupCallbacks.push(() => cleanupFolder(Uri.file(folderAPath)));
 
-        await workspace.fs.writeFile(testFilePhysicalUri, new TextEncoder().encode("hello friends"));
-        const doc = await workspace.openTextDocument(testFileSymbolicUri);
-        assert.equal(doc.getText(), "hello friends");
-        await window.showTextDocument(doc);
-        await sendEscapeKey();
-        return doc;
-    };
+            await workspace.fs.writeFile(
+                testFilePhysicalUri,
+                new TextEncoder().encode("hello friends"),
+            );
+            const doc = await workspace.openTextDocument(testFileSymbolicUri);
+            assert.equal(doc.getText(), "hello friends");
+            await window.showTextDocument(doc);
+            await sendEscapeKey();
+            return doc;
+        };
 
     let client: NeovimClient;
     before(async () => {

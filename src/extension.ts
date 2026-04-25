@@ -13,14 +13,20 @@ const logger = createLogger(EXT_ID);
 // Store the disposables that need to be disposed of when the extension
 // deactivates and are not affected by the restart command.
 const disposables: vscode.Disposable[] = [];
-export async function activate(context: vscode.ExtensionContext, isRestart = false): Promise<void> {
+export async function activate(
+    context: vscode.ExtensionContext,
+    isRestart = false,
+): Promise<void> {
     if (!isRestart) {
         disposables.push(
-            vscode.commands.registerCommand("vscode-neovim.restart", async () => {
-                deactivate(true);
-                disposeAll(context.subscriptions);
-                await activate(context, true);
-            }),
+            vscode.commands.registerCommand(
+                "vscode-neovim.restart",
+                async () => {
+                    deactivate(true);
+                    disposeAll(context.subscriptions);
+                    await activate(context, true);
+                },
+            ),
             vscode.commands.registerCommand("vscode-neovim.stop", () => {
                 deactivate(true);
                 disposeAll(context.subscriptions);
@@ -47,7 +53,10 @@ export async function activate(context: vscode.ExtensionContext, isRestart = fal
         await plugin.init();
     } catch (e) {
         vscode.window
-            .showErrorMessage(`[Failed to start nvim] ${e instanceof Error ? e.message : e}`, "Restart")
+            .showErrorMessage(
+                `[Failed to start nvim] ${e instanceof Error ? e.message : e}`,
+                "Restart",
+            )
             .then((value) => {
                 if (value === "Restart") {
                     vscode.commands.executeCommand("vscode-neovim.restart");
@@ -61,35 +70,57 @@ export function deactivate(isRestart = false) {
 }
 
 function verifyExperimentalAffinity(): void {
-    const extensionsConfiguration = vscode.workspace.getConfiguration("extensions");
-    const affinityConfiguration = extensionsConfiguration.inspect<{ [key: string]: [number] }>("experimental.affinity");
+    const extensionsConfiguration =
+        vscode.workspace.getConfiguration("extensions");
+    const affinityConfiguration = extensionsConfiguration.inspect<{
+        [key: string]: [number];
+    }>("experimental.affinity");
 
     const affinityConfigWorkspaceValue = affinityConfiguration?.workspaceValue;
-    if (affinityConfigWorkspaceValue && EXT_ID in affinityConfigWorkspaceValue) {
-        logger.debug(`Extension affinity value ${affinityConfigWorkspaceValue[EXT_ID]} found in Workspace settings`);
+    if (
+        affinityConfigWorkspaceValue &&
+        EXT_ID in affinityConfigWorkspaceValue
+    ) {
+        logger.debug(
+            `Extension affinity value ${affinityConfigWorkspaceValue[EXT_ID]} found in Workspace settings`,
+        );
         return;
     }
 
     const affinityConfigGlobalValue = affinityConfiguration?.globalValue;
     if (affinityConfigGlobalValue && EXT_ID in affinityConfigGlobalValue) {
-        logger.debug(`Extension affinity value ${affinityConfigGlobalValue[EXT_ID]} found in User settings`);
+        logger.debug(
+            `Extension affinity value ${affinityConfigGlobalValue[EXT_ID]} found in User settings`,
+        );
         return;
     }
 
-    logger.debug("Extension affinity value not set in User and Workspace settings");
+    logger.debug(
+        "Extension affinity value not set in User and Workspace settings",
+    );
 
     const defaultAffinity = 1;
 
     const setAffinity = (value: number): void => {
-        logger.debug(`Setting extension affinity value to ${value} in User settings`);
+        logger.debug(
+            `Setting extension affinity value to ${value} in User settings`,
+        );
         extensionsConfiguration
-            .update("experimental.affinity", { ...affinityConfigGlobalValue, [EXT_ID]: value }, true)
+            .update(
+                "experimental.affinity",
+                { ...affinityConfigGlobalValue, [EXT_ID]: value },
+                true,
+            )
             .then(
                 () => {
-                    logger.debug(`Successfull set extension affinity value to ${value} in User settings`);
+                    logger.debug(
+                        `Successfull set extension affinity value to ${value} in User settings`,
+                    );
                 },
                 (error) => {
-                    logger.error(`Error while setting experimental affinity. ${error}`);
+                    logger.error(
+                        `Error while setting experimental affinity. ${error}`,
+                    );
                 },
             );
     };
@@ -110,7 +141,9 @@ function verifyExperimentalAffinity(): void {
                     )
                     .then((value) => {
                         if (value === "Restart") {
-                            vscode.commands.executeCommand("workbench.action.restartExtensionHost");
+                            vscode.commands.executeCommand(
+                                "workbench.action.restartExtensionHost",
+                            );
                         }
                     });
             }

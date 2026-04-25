@@ -27,7 +27,9 @@ describe("Test incsearch", () => {
         await closeAllActiveEditors();
     });
     it("Cursor is ok for incsearch after scroll", async () => {
-        const e = await openTextDocument(path.join(__dirname, "../../../test_fixtures/incsearch-scroll.ts"));
+        const e = await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/incsearch-scroll.ts"),
+        );
 
         await sendVSCodeKeys("gg");
         await sendVSCodeKeys("/bla");
@@ -37,7 +39,9 @@ describe("Test incsearch", () => {
 
     it("Cursor is ok for incsearch even if register / is not empty", async function () {
         this.retries(0);
-        await openTextDocument(path.join(__dirname, "../../../test_fixtures/incsearch-scroll.ts"));
+        await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/incsearch-scroll.ts"),
+        );
 
         await sendVSCodeKeys("gg");
         await sendVSCodeKeys("/bla");

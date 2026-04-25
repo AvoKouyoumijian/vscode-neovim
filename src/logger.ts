@@ -23,7 +23,11 @@ export interface ILogger {
      * @param level Log level.
      * @param logArgs Log message format string followed by values.
      */
-    log(uri: vscode.Uri | undefined, level: vscode.LogLevel, ...logArgs: any[]): void;
+    log(
+        uri: vscode.Uri | undefined,
+        level: vscode.LogLevel,
+        ...logArgs: any[]
+    ): void;
 }
 
 function getTimestamp(): string {
@@ -46,10 +50,14 @@ export class Logger implements Disposable {
      * @param logToConsole Write messages to the `console` (Hint: run the "Developer: Toggle Developer Tools" vscode command to see the console).
      */
     public init(filePath: string, logToConsole = false) {
-        this.outputChannel = window.createOutputChannel(`${EXT_NAME} logs`, { log: true });
+        this.outputChannel = window.createOutputChannel(`${EXT_NAME} logs`, {
+            log: true,
+        });
         this.disposables.push(
             this.outputChannel,
-            this.outputChannel.onDidChangeLogLevel((level) => this.onLogLevelChanged(level)),
+            this.outputChannel.onDidChangeLogLevel((level) =>
+                this.onLogLevelChanged(level),
+            ),
         );
 
         this.level = this.outputChannel.logLevel;
@@ -86,7 +94,9 @@ export class Logger implements Disposable {
         try {
             this.fd = fs.openSync(this.filePath, "w");
         } catch (err) {
-            window.showErrorMessage(`Can not open log file at ${this.filePath}: ${err}`);
+            window.showErrorMessage(
+                `Can not open log file at ${this.filePath}: ${err}`,
+            );
             return;
         }
 
@@ -101,7 +111,12 @@ export class Logger implements Disposable {
         });
     }
 
-    private log(level: vscode.LogLevel, scope: string, logToOutputChannel: boolean, args: any[]): void {
+    private log(
+        level: vscode.LogLevel,
+        scope: string,
+        logToOutputChannel: boolean,
+        args: any[],
+    ): void {
         const msg = args.reduce((p, c, i) => {
             if (typeof c === "object") {
                 try {
@@ -116,14 +131,24 @@ export class Logger implements Disposable {
         if (this.fd || this.logToConsole) {
             const logMsg = `${getTimestamp()} ${scope}: ${msg}`;
             this.fd && fs.appendFileSync(this.fd, logMsg + "\n");
-            this.logToConsole && console[level === vscode.LogLevel.Error ? "error" : "log"](logMsg);
+            this.logToConsole &&
+                console[level === vscode.LogLevel.Error ? "error" : "log"](
+                    logMsg,
+                );
         }
 
         // Half-baked attempt to avoid infinite loop.
         // Preferred approach is for modules to decide this via `createLogger(…, logToOutputChannel=…)`.
         const activeDoc = window.activeTextEditor?.document; // "output:asvetliakov.vscode-neovim.vscode-neovim"
-        const outputFocused = activeDoc?.uri.scheme === "output" || activeDoc?.fileName?.startsWith("output:");
-        if (logToOutputChannel && this.outputChannel && activeDoc && !outputFocused) {
+        const outputFocused =
+            activeDoc?.uri.scheme === "output" ||
+            activeDoc?.fileName?.startsWith("output:");
+        if (
+            logToOutputChannel &&
+            this.outputChannel &&
+            activeDoc &&
+            !outputFocused
+        ) {
             const fullMsg = `${scope}: ${msg}`;
             switch (level) {
                 case vscode.LogLevel.Error:
@@ -158,30 +183,59 @@ export class Logger implements Disposable {
             : {
                   trace: (...args: any[]) => {
                       if (this.level <= vscode.LogLevel.Trace) {
-                          this.log(vscode.LogLevel.Trace, scope, logToOutputChannel, args);
+                          this.log(
+                              vscode.LogLevel.Trace,
+                              scope,
+                              logToOutputChannel,
+                              args,
+                          );
                       }
                   },
                   debug: (...args: any[]) => {
                       if (this.level <= vscode.LogLevel.Debug) {
-                          this.log(vscode.LogLevel.Debug, scope, logToOutputChannel, args);
+                          this.log(
+                              vscode.LogLevel.Debug,
+                              scope,
+                              logToOutputChannel,
+                              args,
+                          );
                       }
                   },
                   info: (...args: any[]) => {
                       if (this.level <= vscode.LogLevel.Info) {
-                          this.log(vscode.LogLevel.Info, scope, logToOutputChannel, args);
+                          this.log(
+                              vscode.LogLevel.Info,
+                              scope,
+                              logToOutputChannel,
+                              args,
+                          );
                       }
                   },
                   warn: (...args: any[]) => {
                       if (this.level <= vscode.LogLevel.Warning) {
-                          this.log(vscode.LogLevel.Warning, scope, logToOutputChannel, args);
+                          this.log(
+                              vscode.LogLevel.Warning,
+                              scope,
+                              logToOutputChannel,
+                              args,
+                          );
                       }
                   },
                   error: (...args: any[]) => {
                       if (this.level <= vscode.LogLevel.Error) {
-                          this.log(vscode.LogLevel.Error, scope, logToOutputChannel, args);
+                          this.log(
+                              vscode.LogLevel.Error,
+                              scope,
+                              logToOutputChannel,
+                              args,
+                          );
                       }
                   },
-                  log(uri: vscode.Uri | undefined, level: vscode.LogLevel, ...logArgs: any[]) {
+                  log(
+                      uri: vscode.Uri | undefined,
+                      level: vscode.LogLevel,
+                      ...logArgs: any[]
+                  ) {
                       const isLogSink =
                           !uri ||
                           uri.scheme === "output" ||
@@ -224,6 +278,9 @@ export class Logger implements Disposable {
 
 export const logger = new Logger();
 
-export function createLogger(scope = "Neovim", logToOutputChannel = true): ILogger {
+export function createLogger(
+    scope = "Neovim",
+    logToOutputChannel = true,
+): ILogger {
     return logger.createLogger(scope, logToOutputChannel);
 }

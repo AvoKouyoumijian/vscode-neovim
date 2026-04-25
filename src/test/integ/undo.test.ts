@@ -200,13 +200,21 @@ describe("Undo", () => {
         await wait(100);
         const modified = await client.lua("return vim.bo.mod");
         const isDirty = window.activeTextEditor!.document.isDirty;
-        assert.deepEqual({ modified, isDirty }, { modified: expected, isDirty: expected });
+        assert.deepEqual(
+            { modified, isDirty },
+            { modified: expected, isDirty: expected },
+        );
         await wait(100);
     };
 
     it("Should clear isDirty flag after undo all changes (Nvim)", async () => {
-        const uri = vscode.Uri.file(path.join(os.tmpdir(), Math.random().toString(36).substring(7)));
-        await vscode.workspace.fs.writeFile(uri, new Uint8Array(Buffer.from("aaa\nbbb\nccc")));
+        const uri = vscode.Uri.file(
+            path.join(os.tmpdir(), Math.random().toString(36).substring(7)),
+        );
+        await vscode.workspace.fs.writeFile(
+            uri,
+            new Uint8Array(Buffer.from("aaa\nbbb\nccc")),
+        );
         const doc = await vscode.workspace.openTextDocument(uri);
         await vscode.window.showTextDocument(doc);
         await checkDirtyStatus(false);
@@ -222,8 +230,13 @@ describe("Undo", () => {
     });
 
     it("Should reset modified flag after undo all changes (VSCode)", async () => {
-        const uri = vscode.Uri.file(path.join(os.tmpdir(), Math.random().toString(36).substring(7)));
-        await vscode.workspace.fs.writeFile(uri, new Uint8Array(Buffer.from("aaa")));
+        const uri = vscode.Uri.file(
+            path.join(os.tmpdir(), Math.random().toString(36).substring(7)),
+        );
+        await vscode.workspace.fs.writeFile(
+            uri,
+            new Uint8Array(Buffer.from("aaa")),
+        );
         const doc = await vscode.workspace.openTextDocument(uri);
         await vscode.window.showTextDocument(doc);
         await checkDirtyStatus(false);

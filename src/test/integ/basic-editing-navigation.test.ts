@@ -25,7 +25,11 @@ describe("Basic editing and navigation", () => {
     });
 
     it("Normal mode", async () => {
-        await openTextDocument({ content: ["1abc", "", "2abc blah", "3abc blah blah", "4abc"].join("\n") });
+        await openTextDocument({
+            content: ["1abc", "", "2abc blah", "3abc blah blah", "4abc"].join(
+                "\n",
+            ),
+        });
 
         await assertContent(
             {
@@ -47,7 +51,13 @@ describe("Basic editing and navigation", () => {
 
         // delete one symbol
         await sendVSCodeKeys("x");
-        await assertContent({ content: ["1abc", "", "2ac blah", "3abc blah blah", "4abc"], cursor: [2, 2] }, client);
+        await assertContent(
+            {
+                content: ["1abc", "", "2ac blah", "3abc blah blah", "4abc"],
+                cursor: [2, 2],
+            },
+            client,
+        );
 
         // delete word
         await sendVSCodeKeys("d");
@@ -202,12 +212,22 @@ describe("Basic editing and navigation", () => {
 
     it("Shift-A/Shift-I", async () => {
         await openTextDocument({
-            content: ["message ChatEntryNoteData {", "    // Note", "    string note = 1;", "},"].join("\n"),
+            content: [
+                "message ChatEntryNoteData {",
+                "    // Note",
+                "    string note = 1;",
+                "},",
+            ].join("\n"),
         });
 
         await assertContent(
             {
-                content: ["message ChatEntryNoteData {", "    // Note", "    string note = 1;", "},"],
+                content: [
+                    "message ChatEntryNoteData {",
+                    "    // Note",
+                    "    string note = 1;",
+                    "},",
+                ],
                 cursor: [0, 0],
                 cursorStyle: "block",
                 mode: "n",
@@ -317,14 +337,23 @@ describe("Basic editing and navigation", () => {
                 vsCodeCursor: [4, 6],
                 cursorStyle: "line",
                 mode: "i",
-                content: ["text () text", "text  text", "text 'third' text", "text  text", "text {} text", "end"],
+                content: [
+                    "text () text",
+                    "text  text",
+                    "text 'third' text",
+                    "text  text",
+                    "text {} text",
+                    "end",
+                ],
             },
             client,
         );
     });
 
     it("Cursor is ok after deleting the line", async () => {
-        await openTextDocument({ content: ["a", "{", "    b", "    c", "}"].join("\n") });
+        await openTextDocument({
+            content: ["a", "{", "    b", "    c", "}"].join("\n"),
+        });
 
         await sendVSCodeKeys("jj$");
         await sendVSCodeKeys("dd");
@@ -450,7 +479,9 @@ describe("Basic editing and navigation", () => {
     });
 
     it("handles CRLF consistently #1618", async () => {
-        const editor = await openTextDocument({ content: ["a", " a", "", "a"].join("\r\n") });
+        const editor = await openTextDocument({
+            content: ["a", " a", "", "a"].join("\r\n"),
+        });
         assert.ok(editor.document.eol === EndOfLine.CRLF);
         await sendVSCodeKeys("jo");
         await sendEscapeKey();

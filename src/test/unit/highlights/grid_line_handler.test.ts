@@ -51,7 +51,8 @@ describe("GridLine: compute highlight ranges", function () {
             ],
         },
         {
-            testName: "text after start-of-line tabs should have a startCol equal to the number of tabs",
+            testName:
+                "text after start-of-line tabs should have a startCol equal to the number of tabs",
             events: [
                 {
                     line: 0,
@@ -97,7 +98,8 @@ describe("GridLine: compute highlight ranges", function () {
             ],
         },
         {
-            testName: "searching for tabs should highlight their full width with a virtual highlight",
+            testName:
+                "searching for tabs should highlight their full width with a virtual highlight",
             events: [
                 {
                     line: 0,
@@ -160,19 +162,39 @@ describe("GridLine: compute highlight ranges", function () {
             ],
         },
         {
-            testName: "searching for double-wide characters should include their full width in the output",
+            testName:
+                "searching for double-wide characters should include their full width in the output",
             events: [
                 {
                     line: 0,
                     vimCol: 0,
-                    vimCells: [["L", 0], ["e"], ["t"], ["'"], ["s"], [" "], ["s"]],
+                    vimCells: [
+                        ["L", 0],
+                        ["e"],
+                        ["t"],
+                        ["'"],
+                        ["s"],
+                        [" "],
+                        ["s"],
+                    ],
                     lineText: "Let's ship it 🚀",
                     tabSize: 4,
                 },
                 {
                     line: 0,
                     vimCol: 6,
-                    vimCells: [["s", 2], ["h"], ["i"], ["p"], [" "], ["i"], ["t"], [" "], ["🚀"], [""]],
+                    vimCells: [
+                        ["s", 2],
+                        ["h"],
+                        ["i"],
+                        ["p"],
+                        [" "],
+                        ["i"],
+                        ["t"],
+                        [" "],
+                        ["🚀"],
+                        [""],
+                    ],
                     lineText: "Let's ship it 🚀",
                     tabSize: 4,
                 },
@@ -217,12 +239,21 @@ describe("GridLine: compute highlight ranges", function () {
             ],
         },
         {
-            testName: "allows adding virtual text with double-wide characters to the end of an empty line",
+            testName:
+                "allows adding virtual text with double-wide characters to the end of an empty line",
             events: [
                 {
                     line: 0,
                     vimCol: 0,
-                    vimCells: [["👋", 2], [""], ["h"], ["e"], ["l"], ["l"], ["o"]],
+                    vimCells: [
+                        ["👋", 2],
+                        [""],
+                        ["h"],
+                        ["e"],
+                        ["l"],
+                        ["l"],
+                        ["o"],
+                    ],
                     lineText: "",
                     tabSize: 4,
                 },
@@ -230,7 +261,9 @@ describe("GridLine: compute highlight ranges", function () {
             expectedRanges: [
                 {
                     textType: "virtual" as const,
-                    highlights: [{ text: "👋hello", hlId: 2, virtText: "👋hello" }],
+                    highlights: [
+                        { text: "👋hello", hlId: 2, virtText: "👋hello" },
+                    ],
                     line: 0,
                     col: 0,
                 },
@@ -281,7 +314,8 @@ describe("GridLine: compute highlight ranges", function () {
             ],
         },
         {
-            testName: "allows overlaying virtual text on an existing line with double-wide characters",
+            testName:
+                "allows overlaying virtual text on an existing line with double-wide characters",
             events: [
                 {
                     line: 0,
@@ -348,7 +382,8 @@ describe("GridLine: compute highlight ranges", function () {
             ],
         },
         {
-            testName: "redrawing a virtual highlight over a double-wide character redraws both cells",
+            testName:
+                "redrawing a virtual highlight over a double-wide character redraws both cells",
             events: [
                 {
                     line: 0,
@@ -378,7 +413,8 @@ describe("GridLine: compute highlight ranges", function () {
             ],
         },
         {
-            testName: "two highlights on the same line and same hlId should produce two ranges",
+            testName:
+                "two highlights on the same line and same hlId should produce two ranges",
             events: [
                 {
                     line: 0,
@@ -431,11 +467,20 @@ describe("GridLine: compute highlight ranges", function () {
             const lineRanges = new Map<number, HighlightRange[]>();
             events.forEach(({ line, vimCol, vimCells, lineText, tabSize }) => {
                 gridLineHandler.handleGridLine(line, vimCol, vimCells);
-                const highlights = gridLineHandler.computeLineHighlights(line, lineText, tabSize);
-                const ranges = gridLineHandler.lineHighlightsToRanges(line, highlights).filter((range) => {
-                    if (range.textType === "normal") return range.hlId !== 0;
-                    return range.highlights.some((highlight) => highlight.hlId !== 0);
-                });
+                const highlights = gridLineHandler.computeLineHighlights(
+                    line,
+                    lineText,
+                    tabSize,
+                );
+                const ranges = gridLineHandler
+                    .lineHighlightsToRanges(line, highlights)
+                    .filter((range) => {
+                        if (range.textType === "normal")
+                            return range.hlId !== 0;
+                        return range.highlights.some(
+                            (highlight) => highlight.hlId !== 0,
+                        );
+                    });
                 lineRanges.set(line, ranges);
             });
 

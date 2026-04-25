@@ -1,4 +1,12 @@
-import { Disposable, QuickInputButton, QuickPick, QuickPickItem, ThemeIcon, commands, window } from "vscode";
+import {
+    Disposable,
+    QuickInputButton,
+    QuickPick,
+    QuickPickItem,
+    ThemeIcon,
+    commands,
+    window,
+} from "vscode";
 
 import { EventBusData, eventBus } from "./eventBus";
 import { MainController } from "./main_controller";
@@ -66,9 +74,18 @@ export class CommandLineManager implements Disposable {
             this.input.onDidHide(this.onHide),
             this.input.onDidChangeSelection(this.onSelection),
             this.input.onDidTriggerButton(this.onButton),
-            commands.registerCommand("vscode-neovim.commit-cmdline", this.onAccept),
-            commands.registerCommand("vscode-neovim.send-cmdline", this.sendRedraw),
-            commands.registerCommand("vscode-neovim.test-cmdline", this.testCmdline),
+            commands.registerCommand(
+                "vscode-neovim.commit-cmdline",
+                this.onAccept,
+            ),
+            commands.registerCommand(
+                "vscode-neovim.send-cmdline",
+                this.sendRedraw,
+            ),
+            commands.registerCommand(
+                "vscode-neovim.test-cmdline",
+                this.testCmdline,
+            ),
         );
     }
 
@@ -85,7 +102,13 @@ export class CommandLineManager implements Disposable {
     }
 
     private handleRedraw(event: EventBusData<"redraw">) {
-        const allowedEvents = ["cmdline_show", "cmdline_hide", "popupmenu_show", "popupmenu_select", "popupmenu_hide"];
+        const allowedEvents = [
+            "cmdline_show",
+            "cmdline_hide",
+            "popupmenu_show",
+            "popupmenu_select",
+            "popupmenu_hide",
+        ];
         if (allowedEvents.indexOf(event.name) === -1) {
             // Drop any events not relevant to the cmdline; there is no sense in wasting memory queuing them up
             // if they'll just be dropped anyway.
@@ -110,7 +133,10 @@ export class CommandLineManager implements Disposable {
             case "popupmenu_show": {
                 const [items, selected, _row, _col, _grid] = args[0];
                 logger.debug(`popupmenu_show: ${items.length} items`);
-                this.input.items = items.map((item) => ({ label: item[0], alwaysShow: true }));
+                this.input.items = items.map((item) => ({
+                    label: item[0],
+                    alwaysShow: true,
+                }));
                 this.setSelection(selected);
                 break;
             }
@@ -133,7 +159,12 @@ export class CommandLineManager implements Disposable {
         }
     }
 
-    private cmdlineShow = (content: string, firstc: string, prompt: string, level: number): void => {
+    private cmdlineShow = (
+        content: string,
+        firstc: string,
+        prompt: string,
+        level: number,
+    ): void => {
         if (!this.isVisible()) {
             // Reset the state if this is a new dialog
             this.reset();
@@ -143,7 +174,9 @@ export class CommandLineManager implements Disposable {
         this.input.title = prompt || this.getTitle(firstc);
         // only redraw if triggered from a known keybinding. Otherwise, delayed nvim cmdline_show could replace fast typing.
         if (!this.state.redrawExpected) {
-            logger.debug(`cmdline_show: ignoring cmdline_show because no redraw expected: "${content}"`);
+            logger.debug(
+                `cmdline_show: ignoring cmdline_show because no redraw expected: "${content}"`,
+            );
             return;
         }
         this.state.redrawExpected = false;
@@ -191,12 +224,22 @@ export class CommandLineManager implements Disposable {
 
     private onChange = async (text: string): Promise<void> => {
         if (this.state.pendingNvimUpdates) {
-            this.state.pendingNvimUpdates = Math.max(0, this.state.pendingNvimUpdates - 1);
-            logger.debug(`onChange: skip updating cmdline because change originates from nvim: "${text}"`);
+            this.state.pendingNvimUpdates = Math.max(
+                0,
+                this.state.pendingNvimUpdates - 1,
+            );
+            logger.debug(
+                `onChange: skip updating cmdline because change originates from nvim: "${text}"`,
+            );
             return;
         }
-        const toType = calculateInputAfterTextChange(this.state.lastTypedText, text);
-        logger.debug(`onChange: sending cmdline to nvim: "${this.state.lastTypedText}" + "${toType}" -> "${text}"`);
+        const toType = calculateInputAfterTextChange(
+            this.state.lastTypedText,
+            text,
+        );
+        logger.debug(
+            `onChange: sending cmdline to nvim: "${this.state.lastTypedText}" + "${toType}" -> "${text}"`,
+        );
         await this.main.client.input(toType);
         this.state.lastTypedText = text;
     };
@@ -220,14 +263,21 @@ export class CommandLineManager implements Disposable {
         }
     };
 
-    private onSelection = async (e: readonly QuickPickItem[]): Promise<void> => {
+    private onSelection = async (
+        e: readonly QuickPickItem[],
+    ): Promise<void> => {
         if (e.length === 0) {
             return;
         }
         logger.debug(`onSelection: "${e[0].label}"`);
         this.state.redrawExpected = true;
         const index = this.input.items.indexOf(e[0]);
-        await this.main.client.request("nvim_select_popupmenu_item", [index, false, false, {}]);
+        await this.main.client.request("nvim_select_popupmenu_item", [
+            index,
+            false,
+            false,
+            {},
+        ]);
     };
 
     private onButton = async (button: QuickInputButton): Promise<void> => {

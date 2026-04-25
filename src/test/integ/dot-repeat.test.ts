@@ -144,7 +144,9 @@ describe("Dot-repeat", () => {
     });
 
     it("Deleting - with newline", async () => {
-        await openTextDocument({ content: ["1abc", "2abc", "3abc"].join("\n") });
+        await openTextDocument({
+            content: ["1abc", "2abc", "3abc"].join("\n"),
+        });
 
         await sendVSCodeKeys("jjli");
         await sendVSCodeSpecialKey("backspace");
@@ -199,7 +201,9 @@ describe("Dot-repeat", () => {
     });
 
     it("O and o", async () => {
-        await openTextDocument({ content: ["test1", "test2", "test3"].join("\n") });
+        await openTextDocument({
+            content: ["test1", "test2", "test3"].join("\n"),
+        });
         await sendVSCodeKeys("jl");
         await sendInsertKey("o");
         await sendVSCodeKeys("blah");
@@ -223,7 +227,15 @@ describe("Dot-repeat", () => {
         await sendVSCodeKeys(".", 300);
         await assertContent(
             {
-                content: ["blah2", "test1", "blah2", "blah", "test2", "blah", "test3"],
+                content: [
+                    "blah2",
+                    "test1",
+                    "blah2",
+                    "blah",
+                    "test2",
+                    "blah",
+                    "test3",
+                ],
             },
             client,
         );
@@ -447,7 +459,9 @@ describe("Dot-repeat", () => {
     });
 
     it("With o and undo", async () => {
-        await openTextDocument({ content: ["test1", "test2", "test3"].join("\n") });
+        await openTextDocument({
+            content: ["test1", "test2", "test3"].join("\n"),
+        });
 
         await sendInsertKey("o");
         await sendVSCodeKeys("\n\n\n");
@@ -456,7 +470,19 @@ describe("Dot-repeat", () => {
         await sendVSCodeKeys("j.");
         await assertContent(
             {
-                content: ["test1", "", "", "", "", "test2", "", "", "", "", "test3"],
+                content: [
+                    "test1",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "test2",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "test3",
+                ],
             },
             client,
         );

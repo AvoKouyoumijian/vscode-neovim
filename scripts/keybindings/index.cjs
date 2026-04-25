@@ -11,7 +11,10 @@ async function main() {
         .map((m) => keybindings.push(...require(path.join(__dirname, m))));
     packageJson.contributes.keybindings = keybindings;
 
-    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 4) + "\n");
+    fs.writeFileSync(
+        packageJsonPath,
+        JSON.stringify(packageJson, null, 4) + "\n",
+    );
 }
 
 main();

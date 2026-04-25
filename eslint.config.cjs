@@ -30,7 +30,11 @@ module.exports = tseslint.config(
         rules: {
             // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
             // e.g. "@typescript-eslint/explicit-function-return-type": "off",
-            quotes: ["error", "double", { avoidEscape: true, allowTemplateLiterals: false }],
+            quotes: [
+                "error",
+                "double",
+                { avoidEscape: true, allowTemplateLiterals: false },
+            ],
             eqeqeq: ["error", "smart"],
             "no-unused-vars": [
                 "error",

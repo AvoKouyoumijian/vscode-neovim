@@ -75,7 +75,14 @@ describe("Yanking and pasting", () => {
 
     it("pasting line after vi{", async () => {
         await openTextDocument({
-            content: ["var test='a'", "", "function blah() {", "    var another;", "}", ""].join("\n"),
+            content: [
+                "var test='a'",
+                "",
+                "function blah() {",
+                "    var another;",
+                "}",
+                "",
+            ].join("\n"),
         });
 
         await sendVSCodeKeys("yy");
@@ -84,7 +91,15 @@ describe("Yanking and pasting", () => {
         await sendVSCodeKeys("p");
         await assertContent(
             {
-                content: ["var test='a'", "", "function blah() {", "", "var test='a'", "}", ""],
+                content: [
+                    "var test='a'",
+                    "",
+                    "function blah() {",
+                    "",
+                    "var test='a'",
+                    "}",
+                    "",
+                ],
             },
             client,
         );

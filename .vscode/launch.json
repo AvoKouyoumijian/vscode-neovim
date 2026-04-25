@@ -10,7 +10,10 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
-            "args": ["--disable-extensions", "--extensionDevelopmentPath=${workspaceFolder}"],
+            "args": [
+                "--disable-extensions",
+                "--extensionDevelopmentPath=${workspaceFolder}"
+            ],
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],
             "smartStep": true,
             "preLaunchTask": "Watch"
@@ -26,7 +29,10 @@
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/out/test/integ/index"
             ],
-            "outFiles": ["${workspaceFolder}/dist/**/*.js", "${workspaceFolder}/out/test/**/*.js"],
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js",
+                "${workspaceFolder}/out/test/**/*.js"
+            ],
             "preLaunchTask": "Test PreLaunch",
             "env": {
                 "NEOVIM_DEBUG": "1",

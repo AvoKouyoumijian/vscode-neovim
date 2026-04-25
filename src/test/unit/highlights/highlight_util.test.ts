@@ -48,13 +48,15 @@ describe("getWidth", () => {
             expectedWidth: 12,
         },
         {
-            testName: "tabs at the start of a line should count for their full tab width",
+            testName:
+                "tabs at the start of a line should count for their full tab width",
             text: "\treturn 0;",
             expectedWidth: 13,
         },
         {
             // see expandTabs for more tests like this
-            testName: "tabs in the middle of a line should only count up to their next tabstop",
+            testName:
+                "tabs in the middle of a line should only count up to their next tabstop",
             text: "\treturn\t0;",
             expectedWidth: 14,
         },
@@ -88,7 +90,8 @@ describe("expandTabs", () => {
             expected: "heyo    world",
         },
         {
-            testName: "tab is reduced by the number of spaces it's after a tab stop",
+            testName:
+                "tab is reduced by the number of spaces it's after a tab stop",
             line: "hello\tworld",
             expected: "hello   world",
         },

@@ -31,7 +31,14 @@ type RedrawEventArgs =
     | IRedrawEventArg<"win_external_pos", [grid: number, win: neovim.Window]>
     | IRedrawEventArg<
           "win_pos",
-          [grid: number, win: neovim.Window, start_row: number, start_col: number, width: number, height: number]
+          [
+              grid: number,
+              win: neovim.Window,
+              start_row: number,
+              start_col: number,
+              width: number,
+              height: number,
+          ]
       >
     | IRedrawEventArg<
           "win_viewport",
@@ -46,7 +53,10 @@ type RedrawEventArgs =
               scroll_delta: number,
           ]
       >
-    | IRedrawEventArg<"grid_resize", [grid: number, width: number, height: number]>
+    | IRedrawEventArg<
+          "grid_resize",
+          [grid: number, width: number, height: number]
+      >
     | IRedrawEventArg<
           "grid_line",
           [
@@ -59,9 +69,20 @@ type RedrawEventArgs =
       >
     | IRedrawEventArg<
           "grid_scroll",
-          [grid: number, top: number, bot: number, left: number, right: number, rows: number, cols: number]
+          [
+              grid: number,
+              top: number,
+              bot: number,
+              left: number,
+              right: number,
+              rows: number,
+              cols: number,
+          ]
       >
-    | IRedrawEventArg<"grid_cursor_goto", [grid: number, row: number, column: number]>
+    | IRedrawEventArg<
+          "grid_cursor_goto",
+          [grid: number, row: number, column: number]
+      >
     | IRedrawEventArg<"grid_destroy", [grid: number]>
     | IRedrawEventArg<
           "hl_attr_define",
@@ -69,7 +90,13 @@ type RedrawEventArgs =
               hl_id: number,
               rgb_attr: VimHighlightUIAttributes,
               cterm_attr: never,
-              info: [{ kind: "ui" | "syntax" | "terminal"; ui_name: string; hi_name: string }],
+              info: [
+                  {
+                      kind: "ui" | "syntax" | "terminal";
+                      ui_name: string;
+                      hi_name: string;
+                  },
+              ],
           ]
       >
     | IRedrawEventArg<
@@ -100,23 +127,42 @@ type RedrawEventArgs =
           "mode_info_set",
           [
               cursor_style_enabled: boolean,
-              mode_info: { name: string; cursor_shape: "block" | "horizontal" | "vertical" }[],
+              mode_info: {
+                  name: string;
+                  cursor_shape: "block" | "horizontal" | "vertical";
+              }[],
           ]
       >
-    | IRedrawEventArg<"msg_history_show", [entries: [kind: string, MsgShowContent][]]>
+    | IRedrawEventArg<
+          "msg_history_show",
+          [entries: [kind: string, MsgShowContent][]]
+      >
     | IRedrawEventArg<"msg_history_clear">
     | IRedrawEventArg<"msg_clear">
     | IRedrawEventArg<"mode_change", [mode: string, mode_idx: number]>
     | IRedrawEventArg<
           "cmdline_show",
-          [content: [object, string][], pos: number, firstc: string, prompt: string, indent: number, level: number]
+          [
+              content: [object, string][],
+              pos: number,
+              firstc: string,
+              prompt: string,
+              indent: number,
+              level: number,
+          ]
       >
     | IRedrawEventArg<"cmdline_hide">
     | IRedrawEventArg<"mouse_on">
     | IRedrawEventArg<"mouse_off">
     | IRedrawEventArg<
           "popupmenu_show",
-          [items: [string, string, string, string][], selected: number, row: number, col: number, grid: number]
+          [
+              items: [string, string, string, string][],
+              selected: number,
+              row: number,
+              col: number,
+              grid: number,
+          ]
       >
     | IRedrawEventArg<"popupmenu_select", [selected: number]>
     | IRedrawEventArg<"popupmenu_hide">;
@@ -161,6 +207,7 @@ type EventsMapping = {
     ["visual-changed"]: [winId: number];
     ["statusline"]: [statusline: string];
     ["BufModifiedSet"]: [{ buf: number; modified: boolean }];
+    ["update-marks"]: undefined;
 };
 
 export interface Event<T extends keyof EventsMapping = keyof EventsMapping> {
@@ -212,7 +259,10 @@ class EventBus implements Disposable {
     ) {
         return this.emitter.event(
             (e) => {
-                if (name === e.name || (Array.isArray(name) && name.includes(e.name as T))) {
+                if (
+                    name === e.name ||
+                    (Array.isArray(name) && name.includes(e.name as T))
+                ) {
                     handler.call(thisArg, e.data as Event<T>["data"]);
                 }
             },

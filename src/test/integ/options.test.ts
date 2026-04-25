@@ -26,7 +26,9 @@ describe("Synchronize editor options", () => {
         await client.command("autocmd InsertEnter * set nu nornu");
         await client.command("autocmd InsertLeave * set nu rnu");
         // tab
-        await client.command("autocmd FileType * setlocal noexpandtab tabstop=100");
+        await client.command(
+            "autocmd FileType * setlocal noexpandtab tabstop=100",
+        );
         await client.command("augroup END");
     });
     after(async () => {
@@ -39,7 +41,9 @@ describe("Synchronize editor options", () => {
     });
 
     it("number & relativenumber", async () => {
-        const editor = await openTextDocument({ content: "testing...\n".repeat(10) });
+        const editor = await openTextDocument({
+            content: "testing...\n".repeat(10),
+        });
         await wait(200);
 
         await setCursor(3, 0);
@@ -47,27 +51,45 @@ describe("Synchronize editor options", () => {
 
         await client.command("set nu");
         await wait(400);
-        assert.equal(editor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.On);
+        assert.equal(
+            editor.options.lineNumbers,
+            vscode.TextEditorLineNumbersStyle.On,
+        );
 
         await client.command("set rnu");
         await wait(200);
-        assert.equal(editor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.Relative);
+        assert.equal(
+            editor.options.lineNumbers,
+            vscode.TextEditorLineNumbersStyle.Relative,
+        );
 
         await client.command("set nornu");
         await wait(200);
-        assert.equal(editor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.On);
+        assert.equal(
+            editor.options.lineNumbers,
+            vscode.TextEditorLineNumbersStyle.On,
+        );
 
         await client.command("set nonu");
         await wait(200);
-        assert.equal(editor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.Off);
+        assert.equal(
+            editor.options.lineNumbers,
+            vscode.TextEditorLineNumbersStyle.Off,
+        );
 
         await sendVSCodeKeys("i");
         await wait(200);
-        assert.equal(editor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.On);
+        assert.equal(
+            editor.options.lineNumbers,
+            vscode.TextEditorLineNumbersStyle.On,
+        );
 
         await sendEscapeKey();
         await wait(200);
-        assert.equal(editor.options.lineNumbers, vscode.TextEditorLineNumbersStyle.Relative);
+        assert.equal(
+            editor.options.lineNumbers,
+            vscode.TextEditorLineNumbersStyle.Relative,
+        );
     });
 
     async function checkTab(editor: vscode.TextEditor): Promise<void> {
@@ -77,7 +99,11 @@ describe("Synchronize editor options", () => {
             local tabstop = vim.api.nvim_get_option_value('tabstop', { buf = 0 })
             return { expandtab, tabstop }
         `)) as any[];
-        assert.equal(insertSpaces, expandtab, "insertSpaces should be equal to expandtab");
+        assert.equal(
+            insertSpaces,
+            expandtab,
+            "insertSpaces should be equal to expandtab",
+        );
         assert.equal(tabSize, tabstop, "tabSize should be equal to tabstop");
     }
 
@@ -90,7 +116,9 @@ describe("Synchronize editor options", () => {
 
         await wait(200);
 
-        editor = await openTextDocument(path.join(__dirname, "../../../test_fixtures/a.ts"));
+        editor = await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/a.ts"),
+        );
         await wait(200);
         await checkTab(editor);
     });
@@ -116,7 +144,9 @@ describe("Synchronize editor options", () => {
         await sendNeovimKeys(client, "hjkl");
         assert.equal(editor.options.tabSize, 11);
 
-        const editor2 = await openTextDocument({ content: "vim: set noet ts=13:" });
+        const editor2 = await openTextDocument({
+            content: "vim: set noet ts=13:",
+        });
         await wait(200);
         await sendNeovimKeys(client, "hjkl");
         assert.equal(editor2.options.tabSize, 13);

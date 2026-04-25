@@ -88,7 +88,10 @@ describe("Lua vscode.with_insert", function () {
         await sendNeovimKeys(client, "<C-d>");
         await sendNeovimKeys(client, "<C-d>");
         await sendVSCodeKeys("xxx");
-        await assertContent({ content: ["axxx", "axxx 123", "12 axxx"] }, client);
+        await assertContent(
+            { content: ["axxx", "axxx 123", "12 axxx"] },
+            client,
+        );
     });
 
     it("selectHighlights in visual mode", async () => {

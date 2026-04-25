@@ -1,6 +1,13 @@
 import { cloneDeep, findLast } from "lodash";
 
-import { Highlight, HighlightRange, LineCell, NormalHighlightRange, VimCell, VirtualHighlightRange } from "./types";
+import {
+    Highlight,
+    HighlightRange,
+    LineCell,
+    NormalHighlightRange,
+    VimCell,
+    VirtualHighlightRange,
+} from "./types";
 import { CellIter, getWidth, isDouble, splitGraphemes } from "./util";
 
 /**
@@ -36,7 +43,10 @@ export class GridLineHandler {
         this.lineCells[line] = [...leftCells, ...redrawCells, ...rightCells];
     }
 
-    lineHighlightsToRanges(line: number, highlights: Map<number, Highlight[]>): HighlightRange[] {
+    lineHighlightsToRanges(
+        line: number,
+        highlights: Map<number, Highlight[]>,
+    ): HighlightRange[] {
         const normalHighlights: Map<number, NormalHighlightRange[]> = new Map();
         const virtualHighlights: VirtualHighlightRange[] = [];
         highlights.forEach((hls, col) => {
@@ -56,8 +66,12 @@ export class GridLineHandler {
             }
 
             const colHighlight = hls[0];
-            const existingHighlights = normalHighlights.get(colHighlight.hlId) ?? [];
-            const matchingHighlight = findLast(existingHighlights, (hl) => hl.endCol === col);
+            const existingHighlights =
+                normalHighlights.get(colHighlight.hlId) ?? [];
+            const matchingHighlight = findLast(
+                existingHighlights,
+                (hl) => hl.endCol === col,
+            );
 
             if (matchingHighlight) {
                 // Extend our existing highlight if we already have it
@@ -76,14 +90,20 @@ export class GridLineHandler {
             normalHighlights.set(colHighlight.hlId, existingHighlights);
         });
 
-        const ranges: HighlightRange[] = Array.from(normalHighlights.values()).flat();
+        const ranges: HighlightRange[] = Array.from(
+            normalHighlights.values(),
+        ).flat();
         ranges.push(...virtualHighlights);
 
         return ranges;
     }
 
     // char col -> highlights
-    computeLineHighlights(line: number, lineText: string, tabSize: number): Map<number, Highlight[]> {
+    computeLineHighlights(
+        line: number,
+        lineText: string,
+        tabSize: number,
+    ): Map<number, Highlight[]> {
         const lineCells = cloneDeep(this.lineCells[line] ?? []);
         if (!lineCells.length) return new Map();
 
@@ -112,7 +132,10 @@ export class GridLineHandler {
         const cellIter = new CellIter(cells);
         const lineChars = splitGraphemes(lineText);
         // Insert additional columns for characters with length greater than 1.
-        const filledLineText = splitGraphemes(lineText).reduce((p, c) => p + c + " ".repeat(c.length - 1), "");
+        const filledLineText = splitGraphemes(lineText).reduce(
+            (p, c) => p + c + " ".repeat(c.length - 1),
+            "",
+        );
         const filledLineChars = splitGraphemes(filledLineText);
         // Calculates the number of spaces occupied by the tab
         const calcTabCells = (tabCol: number) => {
@@ -127,12 +150,14 @@ export class GridLineHandler {
         let cell = cellIter.takeNext();
         while (cell) {
             const hls: Highlight[] = [];
-            const add = (cell: LineCell, virtText?: string) => hls.push({ ...cell, virtText });
+            const add = (cell: LineCell, virtText?: string) =>
+                hls.push({ ...cell, virtText });
             const currChar = filledLineChars[currCharCol];
             const extraCols = currChar ? currChar.length - 1 : 0;
             currCharCol += extraCols;
             // ... some emojis have text versions e.g. [..."❤️"] == ['❤', '️']
-            const hlCol = currCharCol - (currChar ? [...currChar].length - 1 : 0);
+            const hlCol =
+                currCharCol - (currChar ? [...currChar].length - 1 : 0);
 
             do {
                 if (currChar === "\t") {
@@ -156,7 +181,8 @@ export class GridLineHandler {
                     if (!isDouble(cell.text)) {
                         const nextCell = cellIter.takeNext();
                         nextCell && add(nextCell, nextCell.text);
-                        extraCols && add(nextCell ?? cell, " ".repeat(extraCols));
+                        extraCols &&
+                            add(nextCell ?? cell, " ".repeat(extraCols));
                     }
 
                     break;

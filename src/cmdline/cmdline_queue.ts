@@ -28,7 +28,8 @@ export class CmdlineQueue {
         }
 
         if (event.name === "cmdline_show") {
-            const [_content, _pos, _firstc, _prompt, _indent, level] = event.args[0];
+            const [_content, _pos, _firstc, _prompt, _indent, level] =
+                event.args[0];
             this.lastSeenLevel = level;
         } else if (event.name === "cmdline_hide" && this.lastSeenLevel === 1) {
             // Only make a new batch when we're preforming a hide for a known level 1 cmdline

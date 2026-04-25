@@ -36,7 +36,11 @@ describe("StatusLineMessageTimer", () => {
         timer.onMessageEvent();
         timer.onClearEvent();
 
-        assert.equal(called, false, "precondition of test failed: clear function should not have been called yet");
+        assert.equal(
+            called,
+            false,
+            "precondition of test failed: clear function should not have been called yet",
+        );
 
         clock.tick(5000);
 
@@ -53,7 +57,11 @@ describe("StatusLineMessageTimer", () => {
         clock.tick(5000);
 
         // This should not have been called before the timeout expired
-        assert.equal(called, false, "test precondition failed: clear function should not have been called yet");
+        assert.equal(
+            called,
+            false,
+            "test precondition failed: clear function should not have been called yet",
+        );
 
         timer.onClearEvent();
         // And we should immediately have called it, now that the timeout has already expired
@@ -75,7 +83,11 @@ describe("StatusLineMessageTimer", () => {
         timer.onMessageEvent();
         clock.tick(5000);
 
-        assert.equal(called, false, "Clear function should not have been called");
+        assert.equal(
+            called,
+            false,
+            "Clear function should not have been called",
+        );
     });
 
     it("should not call the clear function if a new message has been sent, even if the old timer has expired", () => {
@@ -89,12 +101,20 @@ describe("StatusLineMessageTimer", () => {
         clock.tick(5000);
 
         // We expect the clear function to have been called
-        assert.equal(calls, 1, "precondition of test failed; clearing did not work as expected");
+        assert.equal(
+            calls,
+            1,
+            "precondition of test failed; clearing did not work as expected",
+        );
 
         timer.onMessageEvent();
         clock.tick(5000);
 
         // Because we received no second clear event, we should not have called the clear function again
-        assert.equal(calls, 1, `clear function was called more times than expected, expected 1, got ${calls}`);
+        assert.equal(
+            calls,
+            1,
+            `clear function was called more times than expected, expected 1, got ${calls}`,
+        );
     });
 });

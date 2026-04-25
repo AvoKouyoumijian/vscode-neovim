@@ -30,7 +30,10 @@ describe("calculateInputAfterTextChange", () => {
         },
     ].forEach(({ name, oldText, newText, expected }) => {
         it(name, () => {
-            assert.equal(calculateInputAfterTextChange(oldText, newText), expected);
+            assert.equal(
+                calculateInputAfterTextChange(oldText, newText),
+                expected,
+            );
         });
     });
 });

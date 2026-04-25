@@ -43,8 +43,7 @@ body:
           required: true
     - type: textarea
       attributes:
-          label:
-              Problem (including [log
+          label: Problem (including [log
               messages](https://github.com/vscode-neovim/vscode-neovim?tab=readme-ov-file#troubleshooting))
           description: Clear and concise description of what the bug is. When did this issue first appear?
       validations:

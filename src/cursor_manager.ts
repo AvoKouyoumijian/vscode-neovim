@@ -42,13 +42,15 @@ export class CursorManager implements Disposable {
     /**
      * Default cursor style for the editor, used as the cursor style in insert mode.
      */
-    private defaultCursorStyle: TextEditorCursorStyle = TextEditorCursorStyle.Line;
+    private defaultCursorStyle: TextEditorCursorStyle =
+        TextEditorCursorStyle.Line;
     /**
      * Cursor positions per editor in neovim
      * ! Note: we should track this because setting cursor as consequence of neovim event will trigger onDidChangeTextEditorSelection with Command kind
      * ! And we should skip it and don't try to send cursor update into neovim again, otherwise few things may break, especially jumplist
      */
-    private neovimCursorPosition: WeakMap<TextEditor, Selection> = new WeakMap();
+    private neovimCursorPosition: WeakMap<TextEditor, Selection> =
+        new WeakMap();
     /**
      * Pending cursor update promise.
      * This promise is used by typing_manager to know when to unbind type handler.
@@ -58,7 +60,8 @@ export class CursorManager implements Disposable {
      * Pending apply selection changed promise.
      * This promise is used by typing_manager to know when to unbind type handler.
      */
-    private applySelectionChangedPromise: Map<TextEditor, ManualPromise> = new Map();
+    private applySelectionChangedPromise: Map<TextEditor, ManualPromise> =
+        new Map();
     /**
      * In insert mode, cursor updates can be sent due to document changes. We should ignore them to
      * avoid interfering with vscode typing. However, they are important for various actions, such as
@@ -68,9 +71,14 @@ export class CursorManager implements Disposable {
      *
      * The flag corresponds to each `TextEditor`
      */
-    private _wantInsertCursorUpdate: WeakMap<TextEditor, boolean> = new WeakMap();
-    public wantInsertCursorUpdate = (editor: TextEditor) => this._wantInsertCursorUpdate.get(editor) ?? false;
-    public setWantInsertCursorUpdate = (editor: TextEditor | undefined, want: boolean) => {
+    private _wantInsertCursorUpdate: WeakMap<TextEditor, boolean> =
+        new WeakMap();
+    public wantInsertCursorUpdate = (editor: TextEditor) =>
+        this._wantInsertCursorUpdate.get(editor) ?? false;
+    public setWantInsertCursorUpdate = (
+        editor: TextEditor | undefined,
+        want: boolean,
+    ) => {
         if (!editor) return;
         if (want) this._wantInsertCursorUpdate.set(editor, want);
         else this._wantInsertCursorUpdate.delete(editor);
@@ -81,12 +89,16 @@ export class CursorManager implements Disposable {
      */
     private gridCursorUpdates: PendingUpdates<number> = new PendingUpdates();
 
-    private debouncedCursorUpdates: WeakMap<TextEditor, DebouncedFunc<CursorManager["updateCursorPosInEditor"]>> =
-        new WeakMap();
+    private debouncedCursorUpdates: WeakMap<
+        TextEditor,
+        DebouncedFunc<CursorManager["updateCursorPosInEditor"]>
+    > = new WeakMap();
 
     // Different change kinds use different debounce times
-    private debouncedApplySelectionChanged: Map<number, DebouncedFunc<CursorManager["applySelectionChanged"]>> =
-        new Map();
+    private debouncedApplySelectionChanged: Map<
+        number,
+        DebouncedFunc<CursorManager["applySelectionChanged"]>
+    > = new Map();
     // A flag indicates that func still pending.
     private previousApplyDebounceTime: number | undefined;
 
@@ -118,7 +130,9 @@ export class CursorManager implements Disposable {
                 const gridId = this.main.bufferManager.getGridIdForWinId(winId);
                 if (gridId) this.gridCursorUpdates.addForceUpdate(gridId);
             }),
-            main.viewportManager.onCursorChanged((grid) => this.gridCursorUpdates.addForceUpdate(grid)),
+            main.viewportManager.onCursorChanged((grid) =>
+                this.gridCursorUpdates.addForceUpdate(grid),
+            ),
             workspace.onDidChangeConfiguration((e) => {
                 if (e.affectsConfiguration("editor.cursorStyle")) {
                     this.updateDefaultCursorStyle();
@@ -128,7 +142,9 @@ export class CursorManager implements Disposable {
             // Reset the cursor style when the extension is deactivated
             new Disposable(() => {
                 this.updateCursorStyleTimeouts.forEach((t) => clearTimeout(t));
-                window.visibleTextEditors.forEach((e) => (e.options.cursorStyle = this.defaultCursorStyle));
+                window.visibleTextEditors.forEach(
+                    (e) => (e.options.cursorStyle = this.defaultCursorStyle),
+                );
             }),
         );
 
@@ -143,26 +159,34 @@ export class CursorManager implements Disposable {
             .split("-")
             .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
             .join("");
-        this.defaultCursorStyle = TextEditorCursorStyle[styleName as any] as any;
+        this.defaultCursorStyle = TextEditorCursorStyle[
+            styleName as any
+        ] as any;
     }
 
     private handleRedraw({ name, args }: EventBusData<"redraw">): void {
         switch (name) {
             case "grid_cursor_goto": {
-                args.forEach((arg) => this.gridCursorUpdates.addForceUpdate(arg[0]));
+                args.forEach((arg) =>
+                    this.gridCursorUpdates.addForceUpdate(arg[0]),
+                );
                 break;
             }
             // nvim may not send grid_cursor_goto and instead uses grid_scroll along with grid_line
             // If we received it we must shift current cursor position by given rows
             case "grid_scroll": {
-                args.forEach((arg) => this.gridCursorUpdates.addForceUpdate(arg[0]));
+                args.forEach((arg) =>
+                    this.gridCursorUpdates.addForceUpdate(arg[0]),
+                );
                 break;
             }
             case "mode_info_set": {
                 args.forEach((arg) =>
                     arg[1].forEach((mode) => {
                         if (mode.name && mode.cursor_shape) {
-                            this.cursorModes.set(mode.name, { cursorShape: mode.cursor_shape });
+                            this.cursorModes.set(mode.name, {
+                                cursorShape: mode.cursor_shape,
+                            });
                         }
                     }),
                 );
@@ -170,7 +194,10 @@ export class CursorManager implements Disposable {
             }
             case "mode_change": {
                 if (this.main.modeManager.isInsertMode) {
-                    this.setWantInsertCursorUpdate(window.activeTextEditor, true);
+                    this.setWantInsertCursorUpdate(
+                        window.activeTextEditor,
+                        true,
+                    );
                 }
                 args.forEach((arg) => this.updateEditorCursorStyle(arg[0]));
                 break;
@@ -186,11 +213,15 @@ export class CursorManager implements Disposable {
     public async waitForCursorUpdate(editor: TextEditor): Promise<unknown> {
         return Promise.all([
             Promise.resolve(this.cursorUpdatePromise.get(editor)?.promise),
-            Promise.resolve(this.applySelectionChangedPromise.get(editor)?.promise),
+            Promise.resolve(
+                this.applySelectionChangedPromise.get(editor)?.promise,
+            ),
         ]);
     }
 
-    private updateEditorCursorStyle(modeName: string = this.main.modeManager.currentMode.name): void {
+    private updateEditorCursorStyle(
+        modeName: string = this.main.modeManager.currentMode.name,
+    ): void {
         const modeConf = this.cursorModes.get(modeName);
         if (!modeConf) {
             return;
@@ -220,14 +251,17 @@ export class CursorManager implements Disposable {
                 continue;
             }
 
-            logger.debug(`Received cursor update from neovim, gridId: ${gridId}`);
+            logger.debug(
+                `Received cursor update from neovim, gridId: ${gridId}`,
+            );
             const editor = this.main.bufferManager.getEditorFromGridId(gridId);
             if (!editor) {
                 logger.warn(`No editor for gridId: ${gridId}`);
                 continue;
             }
             // lock typing in editor until cursor update is complete
-            if (!this.cursorUpdatePromise.has(editor)) this.cursorUpdatePromise.set(editor, new ManualPromise());
+            if (!this.cursorUpdatePromise.has(editor))
+                this.cursorUpdatePromise.set(editor, new ManualPromise());
             this.getDebouncedUpdateCursorPos(editor)(editor, gridId);
         }
     }
@@ -239,7 +273,11 @@ export class CursorManager implements Disposable {
     ): DebouncedFunc<CursorManager["updateCursorPosInEditor"]> => {
         const existing = this.debouncedCursorUpdates.get(editor);
         if (existing) return existing;
-        const func = debounce(this.updateCursorPosInEditor, 5, { leading: false, trailing: true, maxWait: 10 });
+        const func = debounce(this.updateCursorPosInEditor, 5, {
+            leading: false,
+            trailing: true,
+            maxWait: 10,
+        });
         this.debouncedCursorUpdates.set(editor, func);
         return func;
     };
@@ -247,11 +285,18 @@ export class CursorManager implements Disposable {
     /**
      * Update cursor in active editor. Creates visual selections if appropriate.
      */
-    public updateCursorPosInEditor = async (editor: TextEditor, gridId: number): Promise<void> => {
+    public updateCursorPosInEditor = async (
+        editor: TextEditor,
+        gridId: number,
+    ): Promise<void> => {
         // !For text changes neovim sends first buf_lines_event followed by redraw event
         // !But since changes are asynchronous and will happen after redraw event we need to wait for them first
-        logger.debug(`Waiting for document change completion before setting the editor cursor`);
-        await this.main.changeManager.getDocumentChangeCompletionLock(editor.document);
+        logger.debug(
+            `Waiting for document change completion before setting the editor cursor`,
+        );
+        await this.main.changeManager.getDocumentChangeCompletionLock(
+            editor.document,
+        );
 
         if (
             this.main.modeManager.isInsertMode &&
@@ -265,7 +310,10 @@ export class CursorManager implements Disposable {
         }
 
         const bytePos = this.main.viewportManager.getCursorFromViewport(gridId);
-        const nvimActivePos = convertVimPositionToEditorPosition(editor, bytePos);
+        const nvimActivePos = convertVimPositionToEditorPosition(
+            editor,
+            bytePos,
+        );
 
         let selections: Selection[] = [];
         if (!this.main.modeManager.isVisualMode) {
@@ -291,7 +339,10 @@ export class CursorManager implements Disposable {
             selections.length !== prevSelections.length ||
             selections.some(
                 (s, idx) =>
-                    !(s.active.isEqual(prevSelections[idx].active) && s.anchor.isEqual(prevSelections[idx].anchor)),
+                    !(
+                        s.active.isEqual(prevSelections[idx].active) &&
+                        s.anchor.isEqual(prevSelections[idx].anchor)
+                    ),
             )
         ) {
             editor.selections = selections;
@@ -319,7 +370,10 @@ export class CursorManager implements Disposable {
         );
 
         // when dragging mouse, pre-emptively hide cursor to not clash with fake cursor
-        if (kind === TextEditorSelectionChangeKind.Mouse && !textEditor.selection.isEmpty) {
+        if (
+            kind === TextEditorSelectionChangeKind.Mouse &&
+            !textEditor.selection.isEmpty
+        ) {
             this.updateEditorCursorStyle("visual");
         }
 
@@ -330,8 +384,14 @@ export class CursorManager implements Disposable {
         // Waiting theoretically necessary but can lead to other problems.
         // However, most things work fine without waiting before adding the mechanism.
         // Thus, no wait when selection is empty.
-        if (!textEditor.selection.isEmpty && !this.applySelectionChangedPromise.has(textEditor))
-            this.applySelectionChangedPromise.set(textEditor, new ManualPromise());
+        if (
+            !textEditor.selection.isEmpty &&
+            !this.applySelectionChangedPromise.has(textEditor)
+        )
+            this.applySelectionChangedPromise.set(
+                textEditor,
+                new ManualPromise(),
+            );
         this.getDebouncedApplySelectionChanged(kind)(textEditor, kind);
     };
 
@@ -354,12 +414,18 @@ export class CursorManager implements Disposable {
 
         let func = this.debouncedApplySelectionChanged.get(debounceTime);
         if (func) return func;
-        func = debounce(this.applySelectionChanged, debounceTime, { leading: false, trailing: true });
+        func = debounce(this.applySelectionChanged, debounceTime, {
+            leading: false,
+            trailing: true,
+        });
         this.debouncedApplySelectionChanged.set(debounceTime, func);
         return func;
     };
 
-    public applySelectionChanged = async (editor: TextEditor, kind?: TextEditorSelectionChangeKind): Promise<void> => {
+    public applySelectionChanged = async (
+        editor: TextEditor,
+        kind?: TextEditorSelectionChangeKind,
+    ): Promise<void> => {
         // reset cursor style if needed
         this.updateEditorCursorStyle(this.main.modeManager.currentMode.name);
 
@@ -367,8 +433,12 @@ export class CursorManager implements Disposable {
         logger.debug(`Waiting for possible layout completion operation`);
         await this.main.bufferManager.waitForLayoutSync();
         // wait for possible change document events
-        logger.debug(`Waiting for possible document change completion operation`);
-        await this.main.changeManager.getDocumentChangeCompletionLock(editor.document);
+        logger.debug(
+            `Waiting for possible document change completion operation`,
+        );
+        await this.main.changeManager.getDocumentChangeCompletionLock(
+            editor.document,
+        );
         await this.main.changeManager.documentChangeLock.waitForUnlock();
         logger.debug(`Waiting done`);
 
@@ -376,9 +446,14 @@ export class CursorManager implements Disposable {
         const isSingleSelection = editor.selections.length === 1;
 
         // ignore selection change caused by buffer edit
-        const documentChange = this.main.changeManager.eatDocumentCursorAfterChange(editor.document);
+        const documentChange =
+            this.main.changeManager.eatDocumentCursorAfterChange(
+                editor.document,
+            );
         if (documentChange && documentChange.isEqual(selection.active)) {
-            logger.debug(`Skipping onSelectionChanged event since it was selection produced by doc change`);
+            logger.debug(
+                `Skipping onSelectionChanged event since it was selection produced by doc change`,
+            );
         } else {
             logger.debug(
                 `Applying changed selection, kind: ${kind},  cursor: [${selection.active.line}, ${
@@ -388,18 +463,26 @@ export class CursorManager implements Disposable {
 
             if (selection.isEmpty) {
                 // exit visual mode when clicking mouse elsewhere or cancelling selection
-                const isMouseChange = kind === TextEditorSelectionChangeKind.Mouse;
+                const isMouseChange =
+                    kind === TextEditorSelectionChangeKind.Mouse;
                 const isNvimChange =
                     kind === TextEditorSelectionChangeKind.Command &&
                     this.neovimCursorPosition.get(editor)?.isEqual(selection);
-                const shouldExitVisualMode = isMouseChange || (isSingleSelection && !isNvimChange);
+                const shouldExitVisualMode =
+                    isMouseChange || (isSingleSelection && !isNvimChange);
 
-                if (this.main.modeManager.isVisualMode && shouldExitVisualMode) {
+                if (
+                    this.main.modeManager.isVisualMode &&
+                    shouldExitVisualMode
+                ) {
                     await this.client.input("<Esc>");
                 }
 
                 await this.updateNeovimCursorPosition(editor, selection.active);
-            } else if (kind !== TextEditorSelectionChangeKind.Mouse || !config.disableMouseSelection) {
+            } else if (
+                kind !== TextEditorSelectionChangeKind.Mouse ||
+                !config.disableMouseSelection
+            ) {
                 await this.updateNeovimVisualSelection(editor, selection);
             }
         }
@@ -420,12 +503,18 @@ export class CursorManager implements Disposable {
         const winId = this.main.bufferManager.getWinIdForTextEditor(editor);
         if (!winId) return;
         const neovimCursorPos = this.neovimCursorPosition.get(editor);
-        if (skipSameCursorUpdate && neovimCursorPos && neovimCursorPos.active.isEqual(active)) {
+        if (
+            skipSameCursorUpdate &&
+            neovimCursorPos &&
+            neovimCursorPos.active.isEqual(active)
+        ) {
             logger.debug(`Skipping event since neovim has same cursor pos`);
             return;
         }
         const pos = convertEditorPositionToVimPosition(editor, active);
-        logger.debug(`Updating cursor pos in neovim, winId: ${winId}, pos: [${pos.line}, ${pos.character}]`);
+        logger.debug(
+            `Updating cursor pos in neovim, winId: ${winId}, pos: [${pos.line}, ${pos.character}]`,
+        );
         const vimPos = [pos.line + 1, pos.character]; // nvim_win_set_cursor is [1, 0] based
         try {
             await this.client.request("nvim_win_set_cursor", [winId, vimPos]); // a little faster
@@ -434,17 +523,26 @@ export class CursorManager implements Disposable {
             //    When initializing the buffer, the output may be constantly updating.
             // 2. The document is a textEditor, but it cannot accept input, it's meaningless to use the extension.
             // In the document, going out-of-sync and cursor position errors are not significant.
-            if (!config.autoGeneratedDocumentSchemes.includes(editor.document.uri.scheme)) {
+            if (
+                !config.autoGeneratedDocumentSchemes.includes(
+                    editor.document.uri.scheme,
+                )
+            ) {
                 logger.error(`${(e as Error).message}`);
             }
         }
     }
 
-    private async updateNeovimVisualSelection(editor: TextEditor, selection: Selection): Promise<void> {
+    private async updateNeovimVisualSelection(
+        editor: TextEditor,
+        selection: Selection,
+    ): Promise<void> {
         if (this.main.modeManager.isInsertMode) return;
         const winId = this.main.bufferManager.getWinIdForTextEditor(editor);
         if (!winId) return;
-        const bufId = this.main.bufferManager.getBufferIdForTextDocument(editor.document);
+        const bufId = this.main.bufferManager.getBufferIdForTextDocument(
+            editor.document,
+        );
         if (!bufId) return;
         const neovimCursorPos = this.neovimCursorPosition.get(editor);
         if (neovimCursorPos?.isEqual(selection)) {
@@ -461,11 +559,18 @@ export class CursorManager implements Disposable {
         );
     }
 
-    private triggerMovementFunctions = (editor: TextEditor, pos: Position): void => {
+    private triggerMovementFunctions = (
+        editor: TextEditor,
+        pos: Position,
+    ): void => {
         commands.executeCommand("editor.action.wordHighlight.trigger");
 
-        const topVisibleLine = Math.min(...editor.visibleRanges.map((r) => r.start.line));
-        const bottomVisibleLine = Math.max(...editor.visibleRanges.map((r) => r.end.line));
+        const topVisibleLine = Math.min(
+            ...editor.visibleRanges.map((r) => r.start.line),
+        );
+        const bottomVisibleLine = Math.max(
+            ...editor.visibleRanges.map((r) => r.end.line),
+        );
         const deltaLine = pos.line - editor.selection.active.line;
         const type =
             deltaLine > 0

@@ -151,7 +151,17 @@ describe("Macros", () => {
         await sendVSCodeKeys("2@a", 1000);
         await assertContent(
             {
-                content: ["a", "test", "test", "blah", "blah", "blah", "test", "b", "c"],
+                content: [
+                    "a",
+                    "test",
+                    "test",
+                    "blah",
+                    "blah",
+                    "blah",
+                    "test",
+                    "b",
+                    "c",
+                ],
                 cursor: [3, 3],
             },
             client,

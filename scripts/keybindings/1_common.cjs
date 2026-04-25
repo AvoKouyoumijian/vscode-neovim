@@ -1,5 +1,10 @@
 const and = (...items) =>
-    ["editorTextFocus", "neovim.init", "editorLangId not in neovim.editorLangIdExclusions", ...items].join(" && ");
+    [
+        "editorTextFocus",
+        "neovim.init",
+        "editorLangId not in neovim.editorLangIdExclusions",
+        ...items,
+    ].join(" && ");
 
 const keybinds = [
     {

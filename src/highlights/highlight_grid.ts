@@ -1,5 +1,11 @@
 import { cloneDeep } from "lodash";
-import { Range, ThemeColor, type DecorationOptions, type Disposable, type TextEditorDecorationType } from "vscode";
+import {
+    Range,
+    ThemeColor,
+    type DecorationOptions,
+    type Disposable,
+    type TextEditorDecorationType,
+} from "vscode";
 
 import { type BufferManager } from "../buffer_manager";
 import { type DocumentChangeManager } from "../document_change_manager";
@@ -20,7 +26,10 @@ export class HighlightGrid implements Disposable {
     private isDirty = false;
     // line number -> (hlId -> decoration options)
     // Cache the decorations for each line to avoid recalculating them
-    private lineDecorationsCache: Map<number, Map<number, DecorationOptions[]>> = new Map();
+    private lineDecorationsCache: Map<
+        number,
+        Map<number, DecorationOptions[]>
+    > = new Map();
 
     constructor(
         // Used to get the editor and viewport
@@ -88,11 +97,17 @@ export class HighlightGrid implements Disposable {
     private refreshDecorations(): void {
         const { editor, viewport } = this;
 
-        const decorations = new Map<TextEditorDecorationType, DecorationOptions[]>();
+        const decorations = new Map<
+            TextEditorDecorationType,
+            DecorationOptions[]
+        >();
 
         // Get decorations for the viewport
         const startLine = Math.max(0, viewport.topline);
-        const endLine = Math.min(editor.document.lineCount - 1, viewport.botline);
+        const endLine = Math.min(
+            editor.document.lineCount - 1,
+            viewport.botline,
+        );
         this.getDecorations(startLine, endLine).forEach((opts, decorator) => {
             if (!decorations.has(decorator)) decorations.set(decorator, []);
             decorations.get(decorator)!.push(...opts);
@@ -118,8 +133,14 @@ export class HighlightGrid implements Disposable {
     // #region Compute Decorations
 
     // decoration type -> decoration options
-    private getDecorations(startLine: number, endLine: number): Map<TextEditorDecorationType, DecorationOptions[]> {
-        const results = new Map<TextEditorDecorationType, DecorationOptions[]>();
+    private getDecorations(
+        startLine: number,
+        endLine: number,
+    ): Map<TextEditorDecorationType, DecorationOptions[]> {
+        const results = new Map<
+            TextEditorDecorationType,
+            DecorationOptions[]
+        >();
 
         for (let line = startLine; line <= endLine; line++) {
             // Use the cached decorations if available
@@ -139,17 +160,28 @@ export class HighlightGrid implements Disposable {
     }
 
     // hlId -> decoration options
-    private getDecorationsForLine(line: number): Map<number, DecorationOptions[]> {
+    private getDecorationsForLine(
+        line: number,
+    ): Map<number, DecorationOptions[]> {
         const editor = this.editor;
         const lineText = editor.document.lineAt(line).text;
         const tabSize = editor.options.tabSize as number;
-        const highlights = this.gridLineHandler.computeLineHighlights(line, lineText, tabSize);
-        const highlightRanges = this.gridLineHandler.lineHighlightsToRanges(line, highlights);
+        const highlights = this.gridLineHandler.computeLineHighlights(
+            line,
+            lineText,
+            tabSize,
+        );
+        const highlightRanges = this.gridLineHandler.lineHighlightsToRanges(
+            line,
+            highlights,
+        );
         return this.highlightRangesToOptions(highlightRanges);
     }
 
     // hlId -> decoration options
-    private highlightRangesToOptions(ranges: HighlightRange[]): Map<number, DecorationOptions[]> {
+    private highlightRangesToOptions(
+        ranges: HighlightRange[],
+    ): Map<number, DecorationOptions[]> {
         const hlId_options = new Map<number, DecorationOptions[]>();
         const pushOptions = (hlId: number, ...options: DecorationOptions[]) => {
             if (!hlId_options.has(hlId)) {
@@ -161,16 +193,28 @@ export class HighlightGrid implements Disposable {
         ranges.forEach((range) => {
             if (
                 (range.textType === "normal" && range.hlId === 0) ||
-                (range.textType === "virtual" && range.highlights.every((hl) => hl.hlId === 0))
+                (range.textType === "virtual" &&
+                    range.highlights.every((hl) => hl.hlId === 0))
             )
                 return;
 
             if (range.textType === "virtual") {
-                const virtOptions = this.createColVirtTextOptions(range.line, range.col, range.highlights);
-                virtOptions.forEach((options, hlId) => pushOptions(hlId, ...options));
+                const virtOptions = this.createColVirtTextOptions(
+                    range.line,
+                    range.col,
+                    range.highlights,
+                );
+                virtOptions.forEach((options, hlId) =>
+                    pushOptions(hlId, ...options),
+                );
             } else {
                 pushOptions(range.hlId, {
-                    range: new Range(range.line, range.startCol, range.line, range.endCol),
+                    range: new Range(
+                        range.line,
+                        range.startCol,
+                        range.line,
+                        range.endCol,
+                    ),
                 });
             }
         });
@@ -200,7 +244,9 @@ export class HighlightGrid implements Disposable {
             // So, the left-side highlight may not include virtText.
             virtText ??= text;
             if (hlId === 0 && processedColHighlights.length > 0) {
-                processedColHighlights[processedColHighlights.length - 1].virtText += virtText;
+                processedColHighlights[
+                    processedColHighlights.length - 1
+                ].virtText += virtText;
             } else {
                 processedColHighlights.push({ hlId, virtText });
             }
@@ -239,7 +285,9 @@ export class HighlightGrid implements Disposable {
     dispose(): void {
         const editor = this.editor;
         if (!editor) return;
-        this.prevDecorators.forEach((decorator) => editor.setDecorations(decorator, []));
+        this.prevDecorators.forEach((decorator) =>
+            editor.setDecorations(decorator, []),
+        );
         this.prevDecorators.clear();
     }
 }

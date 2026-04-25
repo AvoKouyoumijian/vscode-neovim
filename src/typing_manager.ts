@@ -1,6 +1,13 @@
 // Override vscode commands: "type", "replacePreviousChar", "compositionStart", "compositionEnd"
 // Learn more: https://github.com/microsoft/vscode-extension-samples/tree/main/vim-sample
-import { commands, Disposable, TextEditor, TextEditorEdit, window, workspace } from "vscode";
+import {
+    commands,
+    Disposable,
+    TextEditor,
+    TextEditorEdit,
+    window,
+    workspace,
+} from "vscode";
 
 import { CompositeKeys, config } from "./config";
 import { createLogger } from "./logger";
@@ -78,7 +85,11 @@ export class TypingManager implements Disposable {
         this._takeOverVSCodeInput = takeOver;
 
         if (takeOver) {
-            if (!this.typeHandler) this.typeHandler = commands.registerTextEditorCommand("type", this.onVSCodeType);
+            if (!this.typeHandler)
+                this.typeHandler = commands.registerTextEditorCommand(
+                    "type",
+                    this.onVSCodeType,
+                );
             if (!this.replacePreviousCharHandler)
                 this.replacePreviousCharHandler = commands.registerCommand(
                     "replacePreviousChar",
@@ -107,7 +118,8 @@ export class TypingManager implements Disposable {
         return this.main.modeManager.isRecordingInInsertMode;
     }
 
-    private vscodeDefaultType = (text: string) => commands.executeCommand("default:type", { text });
+    private vscodeDefaultType = (text: string) =>
+        commands.executeCommand("default:type", { text });
 
     public constructor(private main: MainController) {
         // Deprecation warning for old composite escape commands
@@ -127,14 +139,26 @@ export class TypingManager implements Disposable {
                 );
         };
         this.disposables.push(
-            commands.registerCommand("vscode-neovim.compositeEscape1", deprecatedWarning),
-            commands.registerCommand("vscode-neovim.compositeEscape2", deprecatedWarning),
+            commands.registerCommand(
+                "vscode-neovim.compositeEscape1",
+                deprecatedWarning,
+            ),
+            commands.registerCommand(
+                "vscode-neovim.compositeEscape2",
+                deprecatedWarning,
+            ),
         );
 
         this.prepareCompositeKeys();
-        workspace.onDidChangeConfiguration(this.prepareCompositeKeys, this, this.disposables);
+        workspace.onDidChangeConfiguration(
+            this.prepareCompositeKeys,
+            this,
+            this.disposables,
+        );
 
-        const warnOnEmptyKey = (method: (key: string) => Promise<void>): typeof method => {
+        const warnOnEmptyKey = (
+            method: (key: string) => Promise<void>,
+        ): typeof method => {
             return (key: string) => {
                 if (key) {
                     return method.apply(this, [key]);
@@ -156,8 +180,14 @@ export class TypingManager implements Disposable {
         const registerCommand = (cmd: string, cb: (...args: any[]) => any) => {
             this.disposables.push(commands.registerCommand(cmd, cb, this));
         };
-        registerCommand("vscode-neovim.send", warnOnEmptyKey(this.onSendCommand));
-        registerCommand("vscode-neovim.send-blocking", warnOnEmptyKey(this.onSendBlockingCommand));
+        registerCommand(
+            "vscode-neovim.send",
+            warnOnEmptyKey(this.onSendCommand),
+        );
+        registerCommand(
+            "vscode-neovim.send-blocking",
+            warnOnEmptyKey(this.onSendBlockingCommand),
+        );
         registerCommand("vscode-neovim.escape", this.onEscapeKeyCommand);
         registerCommand("compositionStart", this.onCompositionStart);
         registerCommand("compositionEnd", this.onCompositionEnd);
@@ -177,7 +207,8 @@ export class TypingManager implements Disposable {
             }
             const [first, second] = key.split("");
             this.compositeFirstKeys.push(first);
-            const secondKeys = this.compositeSecondKeysForFirstKey.get(first) || [];
+            const secondKeys =
+                this.compositeSecondKeysForFirstKey.get(first) || [];
             secondKeys.push(second);
             this.compositeSecondKeysForFirstKey.set(first, secondKeys);
         });
@@ -185,11 +216,21 @@ export class TypingManager implements Disposable {
     }
 
     private onModeChange = (): void => {
-        if (this.main.modeManager.isInsertMode && this.takeOverVSCodeInput && !this.isRecordingInInsertMode) {
+        if (
+            this.main.modeManager.isInsertMode &&
+            this.takeOverVSCodeInput &&
+            !this.isRecordingInInsertMode
+        ) {
             const editor = window.activeTextEditor;
-            const documentPromise = editor && this.main.changeManager.getDocumentChangeCompletionLock(editor.document);
+            const documentPromise =
+                editor &&
+                this.main.changeManager.getDocumentChangeCompletionLock(
+                    editor.document,
+                );
             if (documentPromise) {
-                logger.debug(`Waiting for cursor completion operation before disposing type handler`);
+                logger.debug(
+                    `Waiting for cursor completion operation before disposing type handler`,
+                );
                 this.pendingKeysAfterEnter = "";
                 this.isEnteringInsertMode = true;
                 documentPromise.then(async () => {
@@ -201,9 +242,12 @@ export class TypingManager implements Disposable {
                         logger.debug(
                             `Replaying pending keys after entering insert mode: ${this.pendingKeysAfterEnter}`,
                         );
-                        await commands.executeCommand(this.isInsertMode ? "default:type" : "type", {
-                            text: this.pendingKeysAfterEnter,
-                        });
+                        await commands.executeCommand(
+                            this.isInsertMode ? "default:type" : "type",
+                            {
+                                text: this.pendingKeysAfterEnter,
+                            },
+                        );
                         this.pendingKeysAfterEnter = "";
                     }
                     this.isEnteringInsertMode = false;
@@ -233,7 +277,9 @@ export class TypingManager implements Disposable {
             return;
         }
 
-        const desiredSecondKeys = this.compositeSecondKeysForFirstKey.get(this.compositeMatchedFirstKey);
+        const desiredSecondKeys = this.compositeSecondKeysForFirstKey.get(
+            this.compositeMatchedFirstKey,
+        );
         if (desiredSecondKeys?.includes(key)) {
             clearTimeout(this.compositeTimer);
             this.compositeTimer = undefined;
@@ -258,9 +304,14 @@ export class TypingManager implements Disposable {
         this.vscodeDefaultType(key);
     }
 
-    private onVSCodeType = async (_editor: TextEditor, _edit: TextEditorEdit, { text }: { text: string }) => {
+    private onVSCodeType = async (
+        _editor: TextEditor,
+        _edit: TextEditorEdit,
+        { text }: { text: string },
+    ) => {
         if (!this.takeOverVSCodeInput) {
-            if (this.isInsertMode && !this.isInComposition) this.compositeInput(text);
+            if (this.isInsertMode && !this.isInComposition)
+                this.compositeInput(text);
             else this.vscodeDefaultType(text);
             return;
         }
@@ -278,11 +329,15 @@ export class TypingManager implements Disposable {
             return;
         }
         if (!this.isInsertMode || this.isRecordingInInsertMode) {
-            this.client.input(normalizeInputString(text, !this.isRecordingInInsertMode));
+            this.client.input(
+                normalizeInputString(text, !this.isRecordingInInsertMode),
+            );
             return;
         }
         if ((await this.client.mode).blocking) {
-            this.client.input(normalizeInputString(text, !this.isRecordingInInsertMode));
+            this.client.input(
+                normalizeInputString(text, !this.isRecordingInInsertMode),
+            );
         } else {
             this.takeOverVSCodeInput = false;
             this.compositeInput(text);
@@ -291,7 +346,10 @@ export class TypingManager implements Disposable {
 
     private onSendCommand = async (key: string): Promise<void> => {
         logger.debug(`Send for: ${key}`);
-        this.main.cursorManager.setWantInsertCursorUpdate(window.activeTextEditor, true);
+        this.main.cursorManager.setWantInsertCursorUpdate(
+            window.activeTextEditor,
+            true,
+        );
         if (this.isInsertMode && !(await this.client.mode).blocking) {
             logger.debug(`Syncing buffers with neovim (${key})`);
             await this.main.changeManager.documentChangeLock.waitForUnlock();
@@ -324,14 +382,20 @@ export class TypingManager implements Disposable {
         await this.onSendBlockingCommand(key);
     };
 
-    private onReplacePreviousChar = (type: { text: string; replaceCharCnt: number }) => {
+    private onReplacePreviousChar = (type: {
+        text: string;
+        replaceCharCnt: number;
+    }) => {
         if (!this.takeOverVSCodeInput) {
             commands.executeCommand("default:replacePreviousChar", type);
             return;
         }
         if (this.isInComposition)
             this.composingText =
-                this.composingText.substring(0, this.composingText.length - type.replaceCharCnt) + type.text;
+                this.composingText.substring(
+                    0,
+                    this.composingText.length - type.replaceCharCnt,
+                ) + type.text;
     };
 
     private onCompositionStart = (): void => {
@@ -342,7 +406,12 @@ export class TypingManager implements Disposable {
         this.isInComposition = false;
 
         if (!this.isInsertMode)
-            this.client.input(normalizeInputString(this.composingText, !this.isRecordingInInsertMode));
+            this.client.input(
+                normalizeInputString(
+                    this.composingText,
+                    !this.isRecordingInInsertMode,
+                ),
+            );
 
         this.composingText = "";
     };

@@ -4,7 +4,12 @@ import path from "path";
 import { NeovimClient } from "neovim";
 import vscode, { Uri, ViewColumn, commands, window, workspace } from "vscode";
 
-import { attachTestNvimClient, closeAllActiveEditors, closeNvimClient, wait } from "./integrationUtils";
+import {
+    attachTestNvimClient,
+    closeAllActiveEditors,
+    closeNvimClient,
+    wait,
+} from "./integrationUtils";
 
 describe("handle window changed event", () => {
     let client: NeovimClient;
@@ -39,9 +44,16 @@ describe("handle window changed event", () => {
         await wait(400);
 
         const note = await workspace.openNotebookDocument(
-            Uri.file(path.join(__dirname, "../../../test_fixtures/window-changed.ipynb")),
+            Uri.file(
+                path.join(
+                    __dirname,
+                    "../../../test_fixtures/window-changed.ipynb",
+                ),
+            ),
         );
-        notebookEditor = await window.showNotebookDocument(note, { viewColumn: ViewColumn.Three });
+        notebookEditor = await window.showNotebookDocument(note, {
+            viewColumn: ViewColumn.Three,
+        });
         await wait(400);
 
         // Make sure the output editor is synchronized

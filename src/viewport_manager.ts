@@ -46,9 +46,13 @@ export class ViewportManager implements Disposable {
     public constructor(private main: MainController) {
         this.disposables.push(
             this.cursorChanged,
-            window.onDidChangeTextEditorVisibleRanges(this.onDidChangeVisibleRange),
+            window.onDidChangeTextEditorVisibleRanges(
+                this.onDidChangeVisibleRange,
+            ),
             eventBus.on("redraw", this.handleRedraw, this),
-            eventBus.on("viewport-changed", ([view]) => this.handleViewportChanged(view)),
+            eventBus.on("viewport-changed", ([view]) =>
+                this.handleViewportChanged(view),
+            ),
         );
     }
 
@@ -90,7 +94,8 @@ export class ViewportManager implements Disposable {
      * @returns viewport data
      */
     public getViewport(gridId: number): Viewport {
-        if (!this.gridViewport.has(gridId)) this.gridViewport.set(gridId, new Viewport());
+        if (!this.gridViewport.has(gridId))
+            this.gridViewport.set(gridId, new Viewport());
         return this.gridViewport.get(gridId)!;
     }
 
@@ -115,7 +120,14 @@ export class ViewportManager implements Disposable {
     private handleRedraw({ name, args }: EventBusData<"redraw">) {
         switch (name) {
             case "win_viewport": {
-                for (const [grid, , topline, botline, curline, curcol] of args) {
+                for (const [
+                    grid,
+                    ,
+                    topline,
+                    botline,
+                    curline,
+                    curcol,
+                ] of args) {
                     const view = this.getViewport(grid);
                     const { line, col } = view;
                     view.topline = topline;
@@ -139,27 +151,40 @@ export class ViewportManager implements Disposable {
 
     // #region
     // FIXME: This is a temporary solution to reduce cursor jitter when scrolling.
-    private debouncedScrollNeovim!: DebouncedFunc<ViewportManager["scrollNeovim"]>;
+    private debouncedScrollNeovim!: DebouncedFunc<
+        ViewportManager["scrollNeovim"]
+    >;
     private debounceTime = 20;
     private refreshDebounceTime(): boolean {
-        const smoothScrolling = workspace.getConfiguration("editor").get("smoothScrolling", false);
+        const smoothScrolling = workspace
+            .getConfiguration("editor")
+            .get("smoothScrolling", false);
         const debounceTime = smoothScrolling ? 100 : 20; // vscode's scrolling duration is 125ms.
         const updated = this.debounceTime !== debounceTime;
         this.debounceTime = debounceTime;
         return updated;
     }
     private refreshDebounceScroll() {
-        this.debouncedScrollNeovim = debounce(this.scrollNeovim.bind(this), this.debounceTime, {
-            leading: false,
-            trailing: true,
-        });
+        this.debouncedScrollNeovim = debounce(
+            this.scrollNeovim.bind(this),
+            this.debounceTime,
+            {
+                leading: false,
+                trailing: true,
+            },
+        );
     }
-    private onDidChangeVisibleRange = (e: TextEditorVisibleRangesChangeEvent) => {
+    private onDidChangeVisibleRange = (
+        e: TextEditorVisibleRangesChangeEvent,
+    ) => {
         if (!this.debouncedScrollNeovim) {
             this.refreshDebounceTime();
             this.refreshDebounceScroll();
             workspace.onDidChangeConfiguration(
-                (e) => e.affectsConfiguration("editor") && this.refreshDebounceTime() && this.refreshDebounceScroll(),
+                (e) =>
+                    e.affectsConfiguration("editor") &&
+                    this.refreshDebounceTime() &&
+                    this.refreshDebounceScroll(),
                 null,
                 this.disposables,
             );
@@ -173,12 +198,20 @@ export class ViewportManager implements Disposable {
             return;
         }
         const ranges = editor.visibleRanges;
-        if (!ranges || ranges.length === 0 || ranges[0].end.line - ranges[0].start.line <= 1) {
+        if (
+            !ranges ||
+            ranges.length === 0 ||
+            ranges[0].end.line - ranges[0].start.line <= 1
+        ) {
             return;
         }
-        const startLine = ranges[0].start.line - config.neovimViewportHeightExtend;
+        const startLine =
+            ranges[0].start.line - config.neovimViewportHeightExtend;
         // when it have fold we need get the last range. it need add 1 line on multiple fold
-        const endLine = ranges[ranges.length - 1].end.line + ranges.length + config.neovimViewportHeightExtend;
+        const endLine =
+            ranges[ranges.length - 1].end.line +
+            ranges.length +
+            config.neovimViewportHeightExtend;
         const currentLine = editor.selection.active.line;
 
         const gridId = this.main.bufferManager.getGridIdFromEditor(editor);
@@ -186,7 +219,11 @@ export class ViewportManager implements Disposable {
             return;
         }
         const viewport = this.gridViewport.get(gridId);
-        if (viewport && startLine !== viewport?.topline && currentLine === viewport?.line) {
+        if (
+            viewport &&
+            startLine !== viewport?.topline &&
+            currentLine === viewport?.line
+        ) {
             actions.lua("scroll_viewport", Math.max(startLine, 0), endLine);
         }
     }

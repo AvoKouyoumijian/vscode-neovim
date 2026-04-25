@@ -18,8 +18,14 @@ describe("Test highlights", () => {
     let orig_visibleTextEditors: any;
 
     before(async () => {
-        orig_activeTextEditor = Object.getOwnPropertyDescriptor(vscode.window, "activeTextEditor");
-        orig_visibleTextEditors = Object.getOwnPropertyDescriptor(vscode.window, "visibleTextEditors");
+        orig_activeTextEditor = Object.getOwnPropertyDescriptor(
+            vscode.window,
+            "activeTextEditor",
+        );
+        orig_visibleTextEditors = Object.getOwnPropertyDescriptor(
+            vscode.window,
+            "visibleTextEditors",
+        );
 
         await closeAllActiveEditors();
         client = await attachTestNvimClient();
@@ -35,13 +41,25 @@ describe("Test highlights", () => {
     });
 
     afterEach(() => {
-        Object.defineProperty(vscode.window, "activeTextEditor", orig_activeTextEditor);
-        Object.defineProperty(vscode.window, "visibleTextEditors", orig_visibleTextEditors);
+        Object.defineProperty(
+            vscode.window,
+            "activeTextEditor",
+            orig_activeTextEditor,
+        );
+        Object.defineProperty(
+            vscode.window,
+            "visibleTextEditors",
+            orig_visibleTextEditors,
+        );
     });
 
     it("extmark display overlay", async () => {
         const doc = await vscode.workspace.openTextDocument({
-            content: ["test ext match", "test ext match", "test ext match"].join("\n"),
+            content: [
+                "test ext match",
+                "test ext match",
+                "test ext match",
+            ].join("\n"),
         });
         await wait(500);
         await vscode.window.showTextDocument(doc);
@@ -76,7 +94,8 @@ describe("Test highlights", () => {
 
         await wait(500);
         assert(stubTextEditor.decorationOptionsList.length > 0);
-        const decoration = stubTextEditor.decorationOptionsList[0][0] as DecorationOptions;
+        const decoration = stubTextEditor
+            .decorationOptionsList[0][0] as DecorationOptions;
 
         assert.ok(decoration.renderOptions); // it should have overlay decoration
         assert.ok(decoration.renderOptions?.before?.contentText === "j");
@@ -85,7 +104,12 @@ describe("Test highlights", () => {
 
     it("forward search / for long line", async () => {
         const doc = await vscode.workspace.openTextDocument({
-            content: ["hello", " ".repeat(3000), "world", " ".repeat(1000)].join(""),
+            content: [
+                "hello",
+                " ".repeat(3000),
+                "world",
+                " ".repeat(1000),
+            ].join(""),
         });
         await vscode.window.showTextDocument(doc);
 
@@ -106,8 +130,11 @@ describe("Test highlights", () => {
             await sendNeovimKeys(client, "/orl");
             await wait(500);
             assert(stubTextEditor.decorationOptionsList.length > 0);
-            const decoration = stubTextEditor.decorationOptionsList[0][0] as DecorationOptions;
-            assert.ok(decoration.range.isEqual(new vscode.Range(0, 3006, 0, 3009)));
+            const decoration = stubTextEditor
+                .decorationOptionsList[0][0] as DecorationOptions;
+            assert.ok(
+                decoration.range.isEqual(new vscode.Range(0, 3006, 0, 3009)),
+            );
         }
     });
 });
@@ -116,7 +143,8 @@ describe("Test highlights", () => {
 // Fake class for testing
 /* eslint-disable */
 class TextEditorStub implements vscode.TextEditor {
-    decorationOptionsList: Array<vscode.Range[] | vscode.DecorationOptions[]> = [];
+    decorationOptionsList: Array<vscode.Range[] | vscode.DecorationOptions[]> =
+        [];
 
     get visibleRanges() {
         return this.editor.visibleRanges;
@@ -169,7 +197,11 @@ class TextEditorStub implements vscode.TextEditor {
     // @ts-ignore
     async insertSnippet(
         snippet: vscode.SnippetString,
-        location?: vscode.Position | vscode.Range | ReadonlyArray<Position> | ReadonlyArray<vscode.Range>,
+        location?:
+            | vscode.Position
+            | vscode.Range
+            | ReadonlyArray<Position>
+            | ReadonlyArray<vscode.Range>,
         options?: { undoStopBefore: boolean; undoStopAfter: boolean },
     ) {
         return true;

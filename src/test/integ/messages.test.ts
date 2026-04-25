@@ -20,7 +20,11 @@ function findOutputChannel(): TextEditor | undefined {
     // There might be a better way to find the right channel than this...
     return window.visibleTextEditors.find((e) => {
         const { scheme, path } = e.document.uri;
-        return scheme === "output" && path.includes(EXT_ID) && path.endsWith("messages");
+        return (
+            scheme === "output" &&
+            path.includes(EXT_ID) &&
+            path.endsWith("messages")
+        );
     });
 }
 
@@ -28,7 +32,10 @@ function findOutputChannel(): TextEditor | undefined {
 function assertOutputContent(expected: string) {
     const outputEditor = findOutputChannel();
     const content = outputEditor?.document.getText();
-    assert.equal(content != null ? content.replace(/\r\n/g, "\n") : content, expected);
+    assert.equal(
+        content != null ? content.replace(/\r\n/g, "\n") : content,
+        expected,
+    );
 }
 
 async function sendCommandLine(command: string) {
@@ -114,7 +121,9 @@ describe("Message output", () => {
         await client.setOption("cmdheight", 1);
         await sendNeovimKeys(client, "/foobar\n");
         await wait();
-        assertOutputContent("/foobar             \nE486: Pattern not found: foobar\n");
+        assertOutputContent(
+            "/foobar             \nE486: Pattern not found: foobar\n",
+        );
 
         await sendCommandLine("messages");
         await wait();

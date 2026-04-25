@@ -43,7 +43,10 @@ export async function wait(timeout = 400): Promise<void> {
 export async function attachTestNvimClient(): Promise<NeovimClient> {
     const NV_HOST = process.env.NEOVIM_DEBUG_HOST || "127.0.0.1";
     const NV_PORT = process.env.NEOVIM_DEBUG_PORT || 4000;
-    const conn = net.createConnection({ port: parseInt(NV_PORT as string, 10), host: NV_HOST });
+    const conn = net.createConnection({
+        port: parseInt(NV_PORT as string, 10),
+        host: NV_HOST,
+    });
 
     // const client = attach({ socket: { port: NV_PORT, host: NV_HOST } as any });
     const client = attach({ writer: conn, reader: conn });
@@ -66,13 +69,17 @@ export async function closeNvimClient(client: NeovimClient): Promise<void> {
     conn.resetAndDestroy();
 }
 
-export async function getCurrentBufferName(client: NeovimClient): Promise<string> {
+export async function getCurrentBufferName(
+    client: NeovimClient,
+): Promise<string> {
     const buf = await client.buffer;
     const name = await buf.name;
     return name;
 }
 
-export async function getCurrentBufferContents(client: NeovimClient): Promise<string[]> {
+export async function getCurrentBufferContents(
+    client: NeovimClient,
+): Promise<string[]> {
     const buf = await client.buffer;
     const lines = await buf.lines;
     return lines;
@@ -85,7 +92,9 @@ export function getVSCodeContent(editor?: TextEditor): string[] {
     if (!editor) {
         throw new Error("No active editor");
     }
-    const text = editor.document.getText(new Range(0, 0, editor.document.lineCount, 0));
+    const text = editor.document.getText(
+        new Range(0, 0, editor.document.lineCount, 0),
+    );
     const eol = editor.document.eol === EndOfLine.CRLF ? "\r\n" : "\n";
     return text.split(eol);
 }
@@ -94,12 +103,19 @@ export function getVSCodeContent(editor?: TextEditor): string[] {
  * Get current neovim cursor. ZERO based
  * @param client
  */
-export async function getNeovimCursor(client: NeovimClient): Promise<[number, number]> {
-    const [line1based, col0based] = await client.request("nvim_win_get_cursor", [0]);
+export async function getNeovimCursor(
+    client: NeovimClient,
+): Promise<[number, number]> {
+    const [line1based, col0based] = await client.request(
+        "nvim_win_get_cursor",
+        [0],
+    );
     return [line1based - 1, col0based];
 }
 
-export async function getCurrentNeovimMode(client: NeovimClient): Promise<string> {
+export async function getCurrentNeovimMode(
+    client: NeovimClient,
+): Promise<string> {
     // return mode short name
     const mode = await client.mode;
     return mode.mode;
@@ -116,7 +132,10 @@ export function getVScodeCursor(editor?: TextEditor): [number, number] {
     return [line, character];
 }
 
-export function hasVSCodeCursorStyle(style: "block" | "underline" | "line", editor?: TextEditor): boolean {
+export function hasVSCodeCursorStyle(
+    style: "block" | "underline" | "line",
+    editor?: TextEditor,
+): boolean {
     if (!editor) {
         editor = window.activeTextEditor;
     }
@@ -134,16 +153,26 @@ export function hasVSCodeCursorStyle(style: "block" | "underline" | "line", edit
     }
 }
 
-export async function sendVSCodeCommand(command: string, args: unknown = "", waitTimeout = 250): Promise<void> {
+export async function sendVSCodeCommand(
+    command: string,
+    args: unknown = "",
+    waitTimeout = 250,
+): Promise<void> {
     await commands.executeCommand(command, args);
     await wait(waitTimeout);
 }
 
-export async function sendVSCodeKeysAtomic(keys: string, waitTimeout = 250): Promise<void> {
+export async function sendVSCodeKeysAtomic(
+    keys: string,
+    waitTimeout = 250,
+): Promise<void> {
     await sendVSCodeCommand("type", { text: keys }, waitTimeout);
 }
 
-export async function sendVSCodeKeys(keys: string, waitTimeout = 250): Promise<void> {
+export async function sendVSCodeKeys(
+    keys: string,
+    waitTimeout = 250,
+): Promise<void> {
     let key = "";
     let append = false;
     for (const k of keys) {
@@ -160,7 +189,11 @@ export async function sendVSCodeKeys(keys: string, waitTimeout = 250): Promise<v
     await wait(waitTimeout);
 }
 
-export async function sendNeovimKeys(client: NeovimClient, keys: string, waitTimeout = 250): Promise<void> {
+export async function sendNeovimKeys(
+    client: NeovimClient,
+    keys: string,
+    waitTimeout = 250,
+): Promise<void> {
     await client.input(keys);
     await wait(waitTimeout);
 }
@@ -182,7 +215,13 @@ export async function sendInsertKey(key = "i", timeout = 250): Promise<void> {
 }
 
 export async function sendVSCodeSpecialKey(
-    key: "backspace" | "delete" | "cursorLeft" | "cursorRight" | "cursorUp" | "cursorDown",
+    key:
+        | "backspace"
+        | "delete"
+        | "cursorLeft"
+        | "cursorRight"
+        | "cursorUp"
+        | "cursorDown",
     waitTimeout = 100,
 ): Promise<void> {
     switch (key) {
@@ -233,8 +272,16 @@ export async function assertContent(
 
     try {
         if (options.content) {
-            assert.deepEqual(await getCurrentBufferContents(client), options.content, "Neovim buffer content is wrong");
-            assert.deepEqual(getVSCodeContent(), options.content, "VSCode content is wrong");
+            assert.deepEqual(
+                await getCurrentBufferContents(client),
+                options.content,
+                "Neovim buffer content is wrong",
+            );
+            assert.deepEqual(
+                getVSCodeContent(),
+                options.content,
+                "VSCode content is wrong",
+            );
         }
         if (options.neovimCursor) {
             assert.deepEqual(
@@ -244,7 +291,11 @@ export async function assertContent(
             );
         }
         if (options.vsCodeSelections) {
-            assert.deepEqual(editor.selections, options.vsCodeSelections, "Selections in vscode are not correct");
+            assert.deepEqual(
+                editor.selections,
+                options.vsCodeSelections,
+                "Selections in vscode are not correct",
+            );
         }
         if (options.vsCodeCursor) {
             assert.deepEqual(
@@ -295,7 +346,11 @@ export async function assertContent(
             );
         }
         if (options.mode) {
-            assert.equal(await getCurrentNeovimMode(client), options.mode, `Neovim mode should be: ${options.mode}`);
+            assert.equal(
+                await getCurrentNeovimMode(client),
+                options.mode,
+                `Neovim mode should be: ${options.mode}`,
+            );
         }
     } catch (e) {
         (e as Error).stack = stack;
@@ -303,7 +358,11 @@ export async function assertContent(
     }
 }
 
-export async function setSelection(selection: Selection, waitTimeout = 250, editor?: TextEditor): Promise<void> {
+export async function setSelection(
+    selection: Selection,
+    waitTimeout = 250,
+    editor?: TextEditor,
+): Promise<void> {
     if (!editor) {
         editor = window.activeTextEditor;
     }
@@ -315,8 +374,17 @@ export async function setSelection(selection: Selection, waitTimeout = 250, edit
     await wait(waitTimeout);
 }
 
-export async function setCursor(line: number, char: number, waitTimeout = 250, editor?: TextEditor): Promise<void> {
-    await setSelection(new Selection(line, char, line, char), waitTimeout, editor);
+export async function setCursor(
+    line: number,
+    char: number,
+    waitTimeout = 250,
+    editor?: TextEditor,
+): Promise<void> {
+    await setSelection(
+        new Selection(line, char, line, char),
+        waitTimeout,
+        editor,
+    );
 }
 
 export async function copyVSCodeSelection(): Promise<void> {
@@ -332,14 +400,18 @@ export async function copyVSCodeSelection(): Promise<void> {
             return a.start.line - b.start.line;
         }
     });
-    const text = sortedSelections.map((s) => editor.document.getText(s)).join("\n");
+    const text = sortedSelections
+        .map((s) => editor.document.getText(s))
+        .join("\n");
     await vscode.env.clipboard.writeText(text);
 }
 export async function pasteVSCode(): Promise<void> {
     await sendVSCodeCommand("editor.action.clipboardPasteAction");
 }
 
-export async function openTextDocument(options: { content: string; language?: string } | string): Promise<TextEditor> {
+export async function openTextDocument(
+    options: { content: string; language?: string } | string,
+): Promise<TextEditor> {
     let doc: TextDocument;
     if (typeof options === "string") {
         doc = await workspace.openTextDocument(options);

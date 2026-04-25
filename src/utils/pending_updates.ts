@@ -37,11 +37,13 @@ export class PendingUpdates<K> {
      *          return true if that resource has been updated.
      */
     entries(): [K, () => boolean][] {
-        return Array.from(this.pendingUpdates.entries()).map(([key, update]) => {
-            // This cannot use checks.some(), as some() stops evaluation once an update returns true
-            const anyValid = () => this.evaluateUpdates(update);
-            return [key, anyValid];
-        });
+        return Array.from(this.pendingUpdates.entries()).map(
+            ([key, update]) => {
+                // This cannot use checks.some(), as some() stops evaluation once an update returns true
+                const anyValid = () => this.evaluateUpdates(update);
+                return [key, anyValid];
+            },
+        );
     }
 
     /**

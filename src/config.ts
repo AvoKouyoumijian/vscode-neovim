@@ -17,7 +17,9 @@ const isWindows = process.platform === "win32";
 
 type SettingPrefix = "neovimExecutablePaths" | "neovimInitVimPaths"; //this needs to be aligned with setting names in package.json
 
-export type CompositeKeys = { [key: string]: { command: string; args?: any[] } };
+export type CompositeKeys = {
+    [key: string]: { command: string; args?: any[] };
+};
 
 export class Config implements Disposable {
     private disposables: Disposable[] = [];
@@ -46,25 +48,43 @@ export class Config implements Disposable {
 
     public init() {
         this.onConfigurationChanged();
-        workspace.onDidChangeConfiguration(this.onConfigurationChanged, this, this.disposables);
+        workspace.onDidChangeConfiguration(
+            this.onConfigurationChanged,
+            this,
+            this.disposables,
+        );
     }
 
     private onConfigurationChanged(e?: ConfigurationChangeEvent) {
         this.cfg = workspace.getConfiguration(this.root);
-        VSCodeContext.set(`neovim.editorLangIdExclusions`, this.editorLangIdExclusions);
+        VSCodeContext.set(
+            `neovim.editorLangIdExclusions`,
+            this.editorLangIdExclusions,
+        );
         const ctrlKeysNormalMode = this.ctrlKeysNormalMode;
         const ctrlKeysInsertMode = this.ctrlKeysInsertMode;
         CTRL_KEYS.forEach((k) => {
-            VSCodeContext.set(`neovim.ctrlKeysNormal.${k}`, ctrlKeysNormalMode.includes(k));
-            VSCodeContext.set(`neovim.ctrlKeysInsert.${k}`, ctrlKeysInsertMode.includes(k));
+            VSCodeContext.set(
+                `neovim.ctrlKeysNormal.${k}`,
+                ctrlKeysNormalMode.includes(k),
+            );
+            VSCodeContext.set(
+                `neovim.ctrlKeysInsert.${k}`,
+                ctrlKeysInsertMode.includes(k),
+            );
         });
 
         if (!e) return;
-        const requireRestart = this.requireRestartConfigs.find((c) => e.affectsConfiguration(c));
+        const requireRestart = this.requireRestartConfigs.find((c) =>
+            e.affectsConfiguration(c),
+        );
         if (!requireRestart) return;
 
         window
-            .showInformationMessage(`Changing "${requireRestart}" requires restart to take effect.`, "Restart")
+            .showInformationMessage(
+                `Changing "${requireRestart}" requires restart to take effect.`,
+                "Restart",
+            )
             .then((value) => {
                 if (value === "Restart") {
                     commands.executeCommand("vscode-neovim.restart");
@@ -72,7 +92,9 @@ export class Config implements Disposable {
             });
     }
 
-    private getSystemSpecificSetting(settingPrefix: SettingPrefix): string | undefined {
+    private getSystemSpecificSetting(
+        settingPrefix: SettingPrefix,
+    ): string | undefined {
         //https://github.com/microsoft/vscode/blob/master/src/vs/base/common/platform.ts#L63
         let platform = process.platform as "win32" | "darwin" | "linux";
         platform = this.useWsl && platform === "win32" ? "linux" : platform;
@@ -103,7 +125,11 @@ export class Config implements Disposable {
     // #endregion
     get useWsl() {
         const ext = extensions.getExtension(EXT_ID)!;
-        return ext.extensionKind !== ExtensionKind.Workspace && isWindows && this.cfg.get("useWSL", false);
+        return (
+            ext.extensionKind !== ExtensionKind.Workspace &&
+            isWindows &&
+            this.cfg.get("useWSL", false)
+        );
     }
     get wslDistribution() {
         return this.cfg.get("wslDistribution", "");
@@ -142,7 +168,12 @@ export class Config implements Disposable {
         return this.cfg.get("statusLineSeparator", "|");
     }
     get statusLineItems(): ("statusline" | "mode" | "cmd" | "msg")[] {
-        return this.cfg.get("statusLineItems", ["statusline", "mode", "cmd", "msg"]);
+        return this.cfg.get("statusLineItems", [
+            "statusline",
+            "mode",
+            "cmd",
+            "msg",
+        ]);
     }
 
     get normalSelectionDebounceTime() {

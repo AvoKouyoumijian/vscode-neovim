@@ -40,16 +40,25 @@ describe("VSCode integration specific stuff", () => {
     it("Doesnt move cursor on peek definition", async () => {
         const doc = (
             await openTextDocument({
-                content: 'declare function test(a: number): void;\n\ntest("")\n',
+                content:
+                    'declare function test(a: number): void;\n\ntest("")\n',
                 language: "typescript",
             })
         ).document;
         await setCursor(2, 1);
 
         // peek definition opens another editor. make sure the cursor won't be leaked into primary editor
-        await vscode.commands.executeCommand("editor.action.peekDefinition", doc.uri, new vscode.Position(2, 1));
+        await vscode.commands.executeCommand(
+            "editor.action.peekDefinition",
+            doc.uri,
+            new vscode.Position(2, 1),
+        );
         await wait(500);
-        await vscode.commands.executeCommand("closeReferenceSearch", doc.uri, new vscode.Position(2, 1));
+        await vscode.commands.executeCommand(
+            "closeReferenceSearch",
+            doc.uri,
+            new vscode.Position(2, 1),
+        );
         await wait(500);
         await assertContent(
             {
@@ -62,13 +71,18 @@ describe("VSCode integration specific stuff", () => {
     it("Moves on cursor on go definition", async () => {
         const doc = (
             await openTextDocument({
-                content: 'declare function test(a: number): void;\n\ntest("")\n',
+                content:
+                    'declare function test(a: number): void;\n\ntest("")\n',
                 language: "typescript",
             })
         ).document;
         await setCursor(2, 1);
 
-        await vscode.commands.executeCommand("editor.action.goToTypeDefinition", doc.uri, new vscode.Position(2, 1));
+        await vscode.commands.executeCommand(
+            "editor.action.goToTypeDefinition",
+            doc.uri,
+            new vscode.Position(2, 1),
+        );
         await wait(1000);
         await assertContent(
             {
@@ -80,25 +94,38 @@ describe("VSCode integration specific stuff", () => {
 
     // TODO: always fails on CI, possible something with screen dimensions?
     it.skip("Editor cursor revealing", async () => {
-        await openTextDocument(path.join(__dirname, "../../../test_fixtures/cursor-revealing.txt"));
+        await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/cursor-revealing.txt"),
+        );
 
         await sendVSCodeKeys("90j");
-        await assertContent({ cursor: [90, 0], vsCodeVisibleRange: { bottom: 90 } }, client);
+        await assertContent(
+            { cursor: [90, 0], vsCodeVisibleRange: { bottom: 90 } },
+            client,
+        );
 
         await sendVSCodeKeys("zt");
-        await assertContent({ cursor: [90, 0], vsCodeVisibleRange: { top: 90 } }, client);
+        await assertContent(
+            { cursor: [90, 0], vsCodeVisibleRange: { top: 90 } },
+            client,
+        );
 
         // await sendVSCodeKeys("40k");
         // await assertContent({ cursor: [90, 0], vsCodeVisibleRange: { bottom: 50 } }, client);
     });
 
     it("Scrolling actions", async () => {
-        const editor = await openTextDocument(path.join(__dirname, "../../../test_fixtures/scrolltest.txt"));
+        const editor = await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/scrolltest.txt"),
+        );
 
         await sendVSCodeCommand("vscode-neovim.ctrl-f");
 
         let visibleRange = editor.visibleRanges[0];
-        assert.strictEqual(editor.selection.active.line, visibleRange.start.line);
+        assert.strictEqual(
+            editor.selection.active.line,
+            visibleRange.start.line,
+        );
         await assertContent(
             {
                 cursor: [editor.visibleRanges[0].start.line, 0],
@@ -109,7 +136,10 @@ describe("VSCode integration specific stuff", () => {
         await sendVSCodeKeys("L", 400);
         visibleRange = editor.visibleRanges[0];
         const cursor = getVScodeCursor(editor);
-        assert.ok(cursor[0] <= visibleRange.end.line && cursor[0] >= visibleRange.end.line - 1);
+        assert.ok(
+            cursor[0] <= visibleRange.end.line &&
+                cursor[0] >= visibleRange.end.line - 1,
+        );
         await assertContent(
             {
                 cursor,
@@ -125,7 +155,9 @@ describe("VSCode integration specific stuff", () => {
             },
             client,
         );
-        const middleline = visibleRange.start.line + (visibleRange.end.line - visibleRange.start.line) / 2;
+        const middleline =
+            visibleRange.start.line +
+            (visibleRange.end.line - visibleRange.start.line) / 2;
         assert.ok(editor.selection.active.line >= middleline - 1);
         assert.ok(editor.selection.active.line <= middleline + 1);
 
@@ -143,10 +175,18 @@ describe("VSCode integration specific stuff", () => {
     it("Go to definition in other file - cursor is ok", async function () {
         this.retries(3);
 
-        const doc2 = (await openTextDocument(path.join(__dirname, "../../../test_fixtures/b.ts"))).document;
+        const doc2 = (
+            await openTextDocument(
+                path.join(__dirname, "../../../test_fixtures/b.ts"),
+            )
+        ).document;
         await setCursor(3, 1);
 
-        await vscode.commands.executeCommand("editor.action.goToTypeDefinition", doc2.uri, new vscode.Position(2, 1));
+        await vscode.commands.executeCommand(
+            "editor.action.goToTypeDefinition",
+            doc2.uri,
+            new vscode.Position(2, 1),
+        );
         await wait(500);
 
         await assertContent(
@@ -178,7 +218,11 @@ describe("VSCode integration specific stuff", () => {
 
         await client.command("au BufEnter * stopinsert");
         await wait(500);
-        await sendVSCodeCommand("workbench.action.focusSecondEditorGroup", "", 1000);
+        await sendVSCodeCommand(
+            "workbench.action.focusSecondEditorGroup",
+            "",
+            1000,
+        );
         await sendInsertKey("I");
         await assertContent(
             {
@@ -190,7 +234,11 @@ describe("VSCode integration specific stuff", () => {
         );
         // make sure the changes will be synced with neovim
         await sendVSCodeKeys("test", 1000);
-        await sendVSCodeCommand("workbench.action.focusFirstEditorGroup", "", 2000);
+        await sendVSCodeCommand(
+            "workbench.action.focusFirstEditorGroup",
+            "",
+            2000,
+        );
         await assertContent(
             {
                 content: ["blah1"],
@@ -209,7 +257,11 @@ describe("VSCode integration specific stuff", () => {
             client,
         );
 
-        await sendVSCodeCommand("workbench.action.focusSecondEditorGroup", "", 2000);
+        await sendVSCodeCommand(
+            "workbench.action.focusSecondEditorGroup",
+            "",
+            2000,
+        );
         await assertContent(
             {
                 content: ["testblah2"],
@@ -243,7 +295,11 @@ describe("VSCode integration specific stuff", () => {
         );
         // make sure the changes will be synced with neovim
         await sendVSCodeKeys("test", 500);
-        await sendVSCodeCommand("workbench.action.previousEditorInGroup", "", 500);
+        await sendVSCodeCommand(
+            "workbench.action.previousEditorInGroup",
+            "",
+            500,
+        );
         await assertContent(
             {
                 content: ["blah1"],
@@ -274,7 +330,9 @@ describe("VSCode integration specific stuff", () => {
     });
 
     it("Cursor is ok when go to def into editor in the other pane", async () => {
-        const doc1 = await vscode.workspace.openTextDocument(path.join(__dirname, "../../../test_fixtures/bb.ts"));
+        const doc1 = await vscode.workspace.openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/bb.ts"),
+        );
         await vscode.window.showTextDocument(doc1, vscode.ViewColumn.One);
         await wait(1500);
 
@@ -285,7 +343,9 @@ describe("VSCode integration specific stuff", () => {
         await wait(1500);
 
         // make sure we're in first editor group
-        await vscode.commands.executeCommand("workbench.action.focusFirstEditorGroup");
+        await vscode.commands.executeCommand(
+            "workbench.action.focusFirstEditorGroup",
+        );
         await wait();
 
         await sendVSCodeKeys("gg5j", 0);
@@ -309,7 +369,12 @@ describe("VSCode integration specific stuff", () => {
     // !Passes only when the runner is in foreground
     it("Cursor is preserved if same doc is opened in two editor columns", async () => {
         const doc = (
-            await openTextDocument(path.join(__dirname, "../../../test_fixtures/cursor-preserved-between-columns.txt"))
+            await openTextDocument(
+                path.join(
+                    __dirname,
+                    "../../../test_fixtures/cursor-preserved-between-columns.txt",
+                ),
+            )
         ).document;
         await wait(1000);
         await sendVSCodeKeys("gg050j", 1000);
@@ -317,7 +382,11 @@ describe("VSCode integration specific stuff", () => {
         await wait(1000);
         await sendVSCodeKeys("gg0100j", 1000);
 
-        await sendVSCodeCommand("workbench.action.focusFirstEditorGroup", "", 2000);
+        await sendVSCodeCommand(
+            "workbench.action.focusFirstEditorGroup",
+            "",
+            2000,
+        );
         await sendVSCodeKeys("l");
         await assertContent(
             {
@@ -326,7 +395,11 @@ describe("VSCode integration specific stuff", () => {
             client,
         );
 
-        await sendVSCodeCommand("workbench.action.focusSecondEditorGroup", "", 1000);
+        await sendVSCodeCommand(
+            "workbench.action.focusSecondEditorGroup",
+            "",
+            1000,
+        );
         await sendVSCodeKeys("l");
         await assertContent(
             {
@@ -385,7 +458,9 @@ describe("VSCode integration specific stuff", () => {
         await sendVSCodeCommand("workbench.action.quickOpen");
         await assertContent(
             {
-                vsCodeSelections: [new vscode.Selection(0, 0, 0, documentContent.length)],
+                vsCodeSelections: [
+                    new vscode.Selection(0, 0, 0, documentContent.length),
+                ],
             },
             client,
         );
@@ -396,7 +471,9 @@ describe("VSCode integration specific stuff", () => {
         await sendVSCodeCommand("vscode-neovim.send", "<C-P>");
         await assertContent(
             {
-                vsCodeSelections: [new vscode.Selection(0, documentContent.length, 0, 0)],
+                vsCodeSelections: [
+                    new vscode.Selection(0, documentContent.length, 0, 0),
+                ],
             },
             client,
         );
@@ -406,12 +483,17 @@ describe("VSCode integration specific stuff", () => {
     it("Filetype detection", async function () {
         this.retries(3);
 
-        const doc1 = await vscode.workspace.openTextDocument(path.join(__dirname, "../../../test_fixtures/bb.ts"));
+        const doc1 = await vscode.workspace.openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/bb.ts"),
+        );
         await vscode.window.showTextDocument(doc1, vscode.ViewColumn.One);
         await wait(1500);
 
         const buf = await client.buffer;
-        const type = await client.request("nvim_buf_get_option", [buf.id, "filetype"]);
+        const type = await client.request("nvim_buf_get_option", [
+            buf.id,
+            "filetype",
+        ]);
         assert.strictEqual("typescript", type);
     });
 
@@ -419,20 +501,36 @@ describe("VSCode integration specific stuff", () => {
         this.retries(2);
 
         const note = await vscode.workspace.openNotebookDocument(
-            vscode.Uri.file(path.join(__dirname, "../../../test_fixtures/window-changed.ipynb")),
+            vscode.Uri.file(
+                path.join(
+                    __dirname,
+                    "../../../test_fixtures/window-changed.ipynb",
+                ),
+            ),
         );
-        await vscode.window.showNotebookDocument(note, { viewColumn: vscode.ViewColumn.One });
+        await vscode.window.showNotebookDocument(note, {
+            viewColumn: vscode.ViewColumn.One,
+        });
         await wait(1000);
 
         const buf = await client.buffer;
-        const type = await client.request("nvim_buf_get_option", [buf.id, "filetype"]);
+        const type = await client.request("nvim_buf_get_option", [
+            buf.id,
+            "filetype",
+        ]);
         assert.strictEqual("python", type);
     });
 
     it("Next search result works", async () => {
-        await openTextDocument(path.join(__dirname, "../../../test_fixtures/incsearch-scroll.ts"));
+        await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/incsearch-scroll.ts"),
+        );
 
-        await sendVSCodeCommand("workbench.action.findInFiles", { query: "blah" }, 500);
+        await sendVSCodeCommand(
+            "workbench.action.findInFiles",
+            { query: "blah" },
+            500,
+        );
         await sendVSCodeCommand("search.action.refreshSearchResults");
         await sendVSCodeCommand("workbench.action.focusFirstEditorGroup");
         await sendVSCodeCommand("search.action.focusNextSearchResult");
@@ -455,7 +553,9 @@ describe("VSCode integration specific stuff", () => {
     });
 
     it("Edit on long lines works", async () => {
-        await openTextDocument(path.join(__dirname, "../../../test_fixtures/long-line.txt"));
+        await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/long-line.txt"),
+        );
 
         await sendVSCodeKeys("gg^");
         await sendVSCodeKeys("2jb");
@@ -514,9 +614,15 @@ describe("VSCode integration specific stuff", () => {
         await openTextDocument({ content: "  hello\n\nworld" });
         await wait(200);
         await sendNeovimKeys(client, "ll", 200);
-        vscode.commands.executeCommand("cursorMove", { to: "down", by: "wrappedLine" });
+        vscode.commands.executeCommand("cursorMove", {
+            to: "down",
+            by: "wrappedLine",
+        });
         await wait(200);
-        vscode.commands.executeCommand("cursorMove", { to: "down", by: "wrappedLine" });
+        vscode.commands.executeCommand("cursorMove", {
+            to: "down",
+            by: "wrappedLine",
+        });
         await wait(200);
         await assertContent({ cursor: [2, 2] }, client);
     });
@@ -531,9 +637,15 @@ describe("VSCode integration specific stuff", () => {
         // wait enough time for it to open
         await wait(100);
         // select the last item
-        await vscode.commands.executeCommand("workbench.action.quickOpenNavigateNext");
-        await vscode.commands.executeCommand("workbench.action.quickOpenNavigateNext");
-        await vscode.commands.executeCommand("workbench.action.acceptSelectedQuickOpenItem");
+        await vscode.commands.executeCommand(
+            "workbench.action.quickOpenNavigateNext",
+        );
+        await vscode.commands.executeCommand(
+            "workbench.action.quickOpenNavigateNext",
+        );
+        await vscode.commands.executeCommand(
+            "workbench.action.acceptSelectedQuickOpenItem",
+        );
         // check the results
         const actual_item = await client.getVar("_ret_item");
         const actual_idx = await client.getVar("_ret_idx");
@@ -555,9 +667,14 @@ describe("VSCode integration specific stuff", () => {
         // wait enough time for it to open
         await wait(100);
         // select the first item
-        await vscode.commands.executeCommand("workbench.action.acceptSelectedQuickOpenItem");
+        await vscode.commands.executeCommand(
+            "workbench.action.acceptSelectedQuickOpenItem",
+        );
         // check the results
-        const actual_item = (await client.getVar("_ret_item")) as { label: string; detail: string };
+        const actual_item = (await client.getVar("_ret_item")) as {
+            label: string;
+            detail: string;
+        };
         const actual_idx = await client.getVar("_ret_idx");
         assert.ok(typeof actual_item === "object");
         assert.strictEqual(actual_item.label, "apple");
@@ -592,7 +709,9 @@ describe("VSCode integration specific stuff", () => {
         // wait enough time for it to open
         await wait(100);
         // confirm the value
-        await vscode.commands.executeCommand("workbench.action.acceptSelectedQuickOpenItem");
+        await vscode.commands.executeCommand(
+            "workbench.action.acceptSelectedQuickOpenItem",
+        );
         // check the results
         const actual_input = await client.getVar("_res");
         assert.strictEqual(actual_input, "test");
@@ -607,7 +726,9 @@ describe("VSCode integration specific stuff", () => {
         // wait enough time for it to open
         await wait(100);
         // confirm the value
-        await vscode.commands.executeCommand("workbench.action.acceptSelectedQuickOpenItem");
+        await vscode.commands.executeCommand(
+            "workbench.action.acceptSelectedQuickOpenItem",
+        );
         // check the results
         const actual_input = await client.getVar("_res");
         assert.strictEqual(actual_input, "");

@@ -1,6 +1,13 @@
 import { NeovimClient } from "neovim";
 import { VimValue } from "neovim/lib/types/VimValue";
-import { ConfigurationTarget, Disposable, Range, commands, window, workspace } from "vscode";
+import {
+    ConfigurationTarget,
+    Disposable,
+    Range,
+    commands,
+    window,
+    workspace,
+} from "vscode";
 
 import { eval_for_client } from "./actions_eval";
 import { VSCodeContext, disposeAll, rangesToSelections, wait } from "./utils";
@@ -35,7 +42,9 @@ class ActionManager implements Disposable {
             throw new Error(`Action "${action}" already exist`);
         }
         this.actions.push(action);
-        this.disposables.push(commands.registerCommand(getActionName(action), callback));
+        this.disposables.push(
+            commands.registerCommand(getActionName(action), callback),
+        );
     }
 
     /**
@@ -45,7 +54,9 @@ class ActionManager implements Disposable {
      * @return A Promise that resolves to the result of the action callback.
      */
     async run(action: string, ...args: any[]): Promise<any> {
-        const command = this.actions.includes(action) ? getActionName(action) : action;
+        const command = this.actions.includes(action)
+            ? getActionName(action)
+            : action;
         return commands.executeCommand(command, ...args);
     }
 
@@ -57,7 +68,10 @@ class ActionManager implements Disposable {
      * @param args arguments for the event
      */
     public fireNvimEvent(event: string, ...args: VimValue[]): void {
-        this.client?.executeLua('require"vscode.api".fire_event(...)', [event, ...args]);
+        this.client?.executeLua('require"vscode.api".fire_event(...)', [
+            event,
+            ...args,
+        ]);
     }
 
     /**
@@ -66,22 +80,30 @@ class ActionManager implements Disposable {
      * @param args arguments
      */
     public async lua<T = any>(fname: string, ...args: VimValue[]): Promise<T> {
-        return this.client?.lua(`return require"vscode.internal".${fname}(...)`, args) as Promise<T>;
+        return this.client?.lua(
+            `return require"vscode.internal".${fname}(...)`,
+            args,
+        ) as Promise<T>;
     }
 
     private initActions() {
         // testing actions
         this.add("_ping", () => "pong");
         this.add("_wait", (ms = 1000) => wait(ms).then(() => "ok"));
-        this.add("eval", (code: string, args: any) => eval_for_client(code, args));
-        this.add("has_config", (names: string | string[]): boolean | boolean[] => {
-            const config = workspace.getConfiguration();
-            if (Array.isArray(names)) {
-                return names.map((name) => config.has(name));
-            } else {
-                return config.has(names);
-            }
-        });
+        this.add("eval", (code: string, args: any) =>
+            eval_for_client(code, args),
+        );
+        this.add(
+            "has_config",
+            (names: string | string[]): boolean | boolean[] => {
+                const config = workspace.getConfiguration();
+                if (Array.isArray(names)) {
+                    return names.map((name) => config.has(name));
+                } else {
+                    return config.has(names);
+                }
+            },
+        );
         this.add("get_config", (names: string | string[]) => {
             const config = workspace.getConfiguration();
             if (Array.isArray(names)) {
@@ -92,7 +114,11 @@ class ActionManager implements Disposable {
         });
         this.add(
             "update_config",
-            async (names: string | string[], values: any, target?: "global" | "workspace" | "workspace_folder") => {
+            async (
+                names: string | string[],
+                values: any,
+                target?: "global" | "workspace" | "workspace_folder",
+            ) => {
                 const config = workspace.getConfiguration();
                 const targetConfig =
                     target === "global"
@@ -115,13 +141,17 @@ class ActionManager implements Disposable {
                 editor.selections = rangesToSelections(ranges, editor.document);
             }
         });
-        this.add("setContext", (key: string, value: any) => VSCodeContext.set(key, value));
+        this.add("setContext", (key: string, value: any) =>
+            VSCodeContext.set(key, value),
+        );
     }
 
     private initHooks() {
         this.disposables.push(
             window.onDidChangeWindowState((e) =>
-                this.client?.command(`doautocmd ${e.focused ? "FocusGained" : "FocusLost"}`),
+                this.client?.command(
+                    `doautocmd ${e.focused ? "FocusGained" : "FocusLost"}`,
+                ),
             ),
         );
     }

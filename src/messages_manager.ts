@@ -55,7 +55,9 @@ export class MessagesManager implements Disposable {
                     // NOTE: we could also potentially handle e.g. `echoerr` differently here,
                     // like logging at error level or displaying a toast etc.
 
-                    const text = content.map(([_attrId, chunk]) => chunk).join("");
+                    const text = content
+                        .map(([_attrId, chunk]) => chunk)
+                        .join("");
                     if (replaceLast) {
                         this.messageBuffer.pop();
                     }
@@ -72,12 +74,16 @@ export class MessagesManager implements Disposable {
             case "msg_history_show": {
                 for (const [entries] of args) {
                     for (const [commandName, content] of entries) {
-                        const cmdContent = content.map(([_attrId, chunk]) => chunk).join("");
+                        const cmdContent = content
+                            .map(([_attrId, chunk]) => chunk)
+                            .join("");
 
                         if (commandName.length === 0) {
                             this.historyBuffer.push(cmdContent);
                         } else {
-                            this.historyBuffer.push(`${commandName}: ${cmdContent}`);
+                            this.historyBuffer.push(
+                                `${commandName}: ${cmdContent}`,
+                            );
                         }
                     }
                 }
@@ -117,17 +123,25 @@ export class MessagesManager implements Disposable {
     private async handleFlush(): Promise<void> {
         if (!this.didChange) return;
 
-        const messages = this.displayHistory ? this.historyBuffer : this.messageBuffer;
-        logger.trace(`Flushing ${this.displayHistory ? "history" : "message"} buffer: ${inspect(messages)}`);
+        const messages = this.displayHistory
+            ? this.historyBuffer
+            : this.messageBuffer;
+        logger.trace(
+            `Flushing ${this.displayHistory ? "history" : "message"} buffer: ${inspect(messages)}`,
+        );
 
         const msg = messages.join("\n");
 
         const lineCount = msg.split("\n").length;
-        const cmdheight = (await this.main.client.getOption("cmdheight")) as number;
+        const cmdheight = (await this.main.client.getOption(
+            "cmdheight",
+        )) as number;
         const shouldRevealOutput = this.revealOutput || lineCount > cmdheight;
 
         const { didChange, revealOutput, displayHistory } = this;
-        logger.trace(inspect({ didChange, revealOutput, displayHistory, lineCount }));
+        logger.trace(
+            inspect({ didChange, revealOutput, displayHistory, lineCount }),
+        );
 
         this.writeMessage(this.ensureEOL(msg));
         if (shouldRevealOutput) {

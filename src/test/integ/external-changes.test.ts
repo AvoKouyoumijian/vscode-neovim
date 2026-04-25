@@ -26,14 +26,34 @@ describe("External changes in file", () => {
 
     it("Multiple replacing/deleting/inserting", async () => {
         const filePath = path.join(os.tmpdir(), Math.random().toString());
-        fs.writeFileSync(filePath, ["line 1", "line 2", "line 3", "line 4", "line 5", "line 6", "line 7"].join("\n"), {
-            encoding: "utf8",
-        });
+        fs.writeFileSync(
+            filePath,
+            [
+                "line 1",
+                "line 2",
+                "line 3",
+                "line 4",
+                "line 5",
+                "line 6",
+                "line 7",
+            ].join("\n"),
+            {
+                encoding: "utf8",
+            },
+        );
         await openTextDocument(filePath);
 
         await assertContent(
             {
-                content: ["line 1", "line 2", "line 3", "line 4", "line 5", "line 6", "line 7"],
+                content: [
+                    "line 1",
+                    "line 2",
+                    "line 3",
+                    "line 4",
+                    "line 5",
+                    "line 6",
+                    "line 7",
+                ],
             },
             client,
         );

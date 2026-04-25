@@ -1,4 +1,7 @@
-export function findLastEvent(name: string, batch: [string, ...unknown[]][]): [string, ...unknown[]] | undefined {
+export function findLastEvent(
+    name: string,
+    batch: [string, ...unknown[]][],
+): [string, ...unknown[]] | undefined {
     return batch.findLast(([event]) => event === name);
 }
 

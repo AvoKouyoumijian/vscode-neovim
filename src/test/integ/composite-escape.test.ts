@@ -39,7 +39,11 @@ describe("Composite escape key", () => {
         await closeAllActiveEditors();
         await vscode.workspace
             .getConfiguration("vscode-neovim")
-            .update("compositeKeys", undefined, vscode.ConfigurationTarget.Global);
+            .update(
+                "compositeKeys",
+                undefined,
+                vscode.ConfigurationTarget.Global,
+            );
     });
 
     it("Works", async () => {

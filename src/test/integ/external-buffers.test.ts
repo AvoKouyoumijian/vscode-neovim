@@ -67,6 +67,9 @@ describe("Neovim external buffers", () => {
 
         assert.ok(neovimCursor[0] !== 0);
         assert.ok(vscodeCursor[0] === neovimCursor[0]);
-        assert.equal(text.split("\n")[neovimCursor[0]], "Handling of local options			*local-options*");
+        assert.equal(
+            text.split("\n")[neovimCursor[0]],
+            "Handling of local options			*local-options*",
+        );
     });
 });

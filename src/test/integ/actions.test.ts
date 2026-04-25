@@ -14,13 +14,26 @@ import {
     wait,
 } from "./integrationUtils";
 
-async function eval_from_nvim(client: NeovimClient, code: string): Promise<any> {
-    return JSON.parse(await client.commandOutput(`lua print(vim.fn.json_encode(require'vscode'.eval('${code}')))`));
+async function eval_from_nvim(
+    client: NeovimClient,
+    code: string,
+): Promise<any> {
+    return JSON.parse(
+        await client.commandOutput(
+            `lua print(vim.fn.json_encode(require'vscode'.eval('${code}')))`,
+        ),
+    );
 }
 
-async function eval_from_nvim_with_opts(client: NeovimClient, code: string, opts: string): Promise<any> {
+async function eval_from_nvim_with_opts(
+    client: NeovimClient,
+    code: string,
+    opts: string,
+): Promise<any> {
     return JSON.parse(
-        await client.commandOutput(`lua print(vim.fn.json_encode(require'vscode'.eval('${code}', ${opts})))`),
+        await client.commandOutput(
+            `lua print(vim.fn.json_encode(require'vscode'.eval('${code}', ${opts})))`,
+        ),
     );
 }
 
@@ -62,7 +75,10 @@ describe("Eval VSCode", () => {
         output = await eval_from_nvim(client, "function foo() {}; return foo;");
         assert.equal(output, null);
 
-        output = await eval_from_nvim(client, "function foo() {}; return {a: foo, b: 123};");
+        output = await eval_from_nvim(
+            client,
+            "function foo() {}; return {a: foo, b: 123};",
+        );
         assert.deepEqual(output, { b: 123 });
 
         await assert.rejects(
@@ -70,19 +86,37 @@ describe("Eval VSCode", () => {
             /Error executing lua Return value of eval not JSON serializable: TypeError: Converting circular structure to JSON.*/,
         );
 
-        output = await eval_from_nvim(client, "function f(v) {return 100 + v;}; return f(2);");
+        output = await eval_from_nvim(
+            client,
+            "function f(v) {return 100 + v;}; return f(2);",
+        );
         assert.equal(output, 102);
 
-        output = await eval_from_nvim(client, "async function f(v) {return 100 + v;}; return await f(2);");
+        output = await eval_from_nvim(
+            client,
+            "async function f(v) {return 100 + v;}; return await f(2);",
+        );
         assert.equal(output, 102);
 
-        output = await eval_from_nvim_with_opts(client, "return args;", "{ args = 12 }");
+        output = await eval_from_nvim_with_opts(
+            client,
+            "return args;",
+            "{ args = 12 }",
+        );
         assert.equal(output, 12);
 
-        output = await eval_from_nvim_with_opts(client, "return args.foo", "{ args = { foo = 12 } }");
+        output = await eval_from_nvim_with_opts(
+            client,
+            "return args.foo",
+            "{ args = { foo = 12 } }",
+        );
         assert.equal(output, 12);
 
-        output = await eval_from_nvim_with_opts(client, "return args[0]", "{ args = { 12 } }");
+        output = await eval_from_nvim_with_opts(
+            client,
+            "return args[0]",
+            "{ args = { 12 } }",
+        );
         assert.equal(output, 12);
     });
 
@@ -94,19 +128,34 @@ describe("Eval VSCode", () => {
 
         await openTextDocument(filePath);
 
-        let output = await eval_from_nvim(client, "return vscode.window.showWarningMessage");
+        let output = await eval_from_nvim(
+            client,
+            "return vscode.window.showWarningMessage",
+        );
         assert.equal(output, null);
 
-        output = await eval_from_nvim(client, "return vscode.window.activeTextEditor.document.fileName");
+        output = await eval_from_nvim(
+            client,
+            "return vscode.window.activeTextEditor.document.fileName",
+        );
         assert.ok(pathsEqual(output, filePath), `${output} != ${filePath}`);
 
-        output = await eval_from_nvim(client, "return vscode.window.tabGroups.activeTabGroup.activeTab.isPinned");
+        output = await eval_from_nvim(
+            client,
+            "return vscode.window.tabGroups.activeTabGroup.activeTab.isPinned",
+        );
         assert.equal(output, false);
 
-        await eval_from_nvim(client, 'await vscode.commands.executeCommand("workbench.action.pinEditor")');
+        await eval_from_nvim(
+            client,
+            'await vscode.commands.executeCommand("workbench.action.pinEditor")',
+        );
         await wait(200);
         try {
-            output = await eval_from_nvim(client, "return vscode.window.tabGroups.activeTabGroup.activeTab.isPinned");
+            output = await eval_from_nvim(
+                client,
+                "return vscode.window.tabGroups.activeTabGroup.activeTab.isPinned",
+            );
             assert.equal(output, true);
         } finally {
             await sendVSCodeCommand("workbench.action.unpinEditor");
@@ -117,7 +166,10 @@ describe("Eval VSCode", () => {
             "await vscode.env.clipboard.writeText(args.text)",
             "{ args = { text = 'hi'} }",
         );
-        output = await eval_from_nvim(client, "return await vscode.env.clipboard.readText()");
+        output = await eval_from_nvim(
+            client,
+            "return await vscode.env.clipboard.readText()",
+        );
         assert.equal(output, "hi");
 
         output = await eval_from_nvim(client, 'return globalThis["foo"];');
@@ -128,9 +180,14 @@ describe("Eval VSCode", () => {
     });
 
     it("Javascript Async Evaluation", async () => {
-        let output: any = await eval_from_nvim(client, 'return globalThis["async_ran"];');
+        let output: any = await eval_from_nvim(
+            client,
+            'return globalThis["async_ran"];',
+        );
         assert.equal(output, null);
-        output = await client.commandOutput(`lua print(vim.g.async_callback_ran)`);
+        output = await client.commandOutput(
+            `lua print(vim.g.async_callback_ran)`,
+        );
         assert.equal(output, "nil");
 
         await client.commandOutput(
@@ -140,16 +197,26 @@ describe("Eval VSCode", () => {
             { args = "yes", callback = function(err, ret) vim.g.async_callback_ran = ret end })`,
         );
 
-        output = await eval_from_nvim(client, 'return globalThis["async_ran"];');
+        output = await eval_from_nvim(
+            client,
+            'return globalThis["async_ran"];',
+        );
         assert.equal(output, null);
-        output = await client.commandOutput(`lua print(vim.g.async_callback_ran)`);
+        output = await client.commandOutput(
+            `lua print(vim.g.async_callback_ran)`,
+        );
         assert.equal(output, "nil");
 
         await wait(250);
 
-        output = await eval_from_nvim(client, 'return globalThis["async_ran"];');
+        output = await eval_from_nvim(
+            client,
+            'return globalThis["async_ran"];',
+        );
         assert.equal(output, "yes");
-        output = await client.commandOutput(`lua print(vim.g.async_callback_ran)`);
+        output = await client.commandOutput(
+            `lua print(vim.g.async_callback_ran)`,
+        );
         assert.equal(output, "yes");
     });
 
@@ -166,18 +233,30 @@ describe("Eval VSCode", () => {
             );
         }, /Error executing lua .* Call 'eval' timed out/);
 
-        let output = await eval_from_nvim(client, "return vscode.window.property_that_does_not_exist");
+        let output = await eval_from_nvim(
+            client,
+            "return vscode.window.property_that_does_not_exist",
+        );
         assert.equal(output, null);
 
         await assert.rejects(async () => {
-            await eval_from_nvim(client, "return vscode.window.property_that_does_not_exist.nested_property");
+            await eval_from_nvim(
+                client,
+                "return vscode.window.property_that_does_not_exist.nested_property",
+            );
         }, /Error executing lua Cannot read properties of undefined \(reading 'nested_property'\)/);
 
-        output = await eval_from_nvim(client, "return vscode.window.visibleTextEditors[99]");
+        output = await eval_from_nvim(
+            client,
+            "return vscode.window.visibleTextEditors[99]",
+        );
         assert.equal(output, null);
 
         await assert.rejects(async () => {
-            await eval_from_nvim(client, 'await vscode.commands.executeCommand("unknown_action")');
+            await eval_from_nvim(
+                client,
+                'await vscode.commands.executeCommand("unknown_action")',
+            );
         }, /Error executing lua command 'unknown_action' not found/);
     });
 });

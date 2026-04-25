@@ -28,7 +28,9 @@ describe("Jumplist & jump actions & marks", () => {
     it("Jump to definition to another file", async function () {
         this.retries(3);
 
-        await openTextDocument(path.join(__dirname, "../../../test_fixtures/b.ts"));
+        await openTextDocument(
+            path.join(__dirname, "../../../test_fixtures/b.ts"),
+        );
         await wait(2000);
 
         await sendVSCodeKeys("jjjjjl");
@@ -47,7 +49,12 @@ describe("Jumplist & jump actions & marks", () => {
     it.skip("Jump to definition in same file", async function () {
         this.retries(3);
 
-        await openTextDocument(path.join(__dirname, "../../../test_fixtures/go-to-def-same-file.ts"));
+        await openTextDocument(
+            path.join(
+                __dirname,
+                "../../../test_fixtures/go-to-def-same-file.ts",
+            ),
+        );
         await wait(2000);
 
         await sendVSCodeKeys("gg049jgd", 2000);
@@ -76,7 +83,9 @@ describe("Jumplist & jump actions & marks", () => {
     });
 
     it("lower-case marks should still exist after changes #543", async function () {
-        const editor = await openTextDocument({ content: ["abc", "def", "uvw", "xyz"].join("\n") });
+        const editor = await openTextDocument({
+            content: ["abc", "def", "uvw", "xyz"].join("\n"),
+        });
         await wait(300);
         await sendNeovimKeys(client, "maG");
         editor.edit((builder) => {

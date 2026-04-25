@@ -32,20 +32,29 @@ describe("Command line", () => {
         await sendVSCodeKeys(":");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", 'echo "abc"');
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
-        assert.equal(await client.commandOutput("echo getreg(':')"), 'echo "abc"');
+        assert.equal(
+            await client.commandOutput("echo getreg(':')"),
+            'echo "abc"',
+        );
 
         await sendVSCodeKeys(":");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", 'echo "123"');
         await sendVSCodeCommand("vscode-neovim.send-cmdline", "<Up>");
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
-        assert.equal(await client.commandOutput("echo getreg(':')"), 'echo "123"');
+        assert.equal(
+            await client.commandOutput("echo getreg(':')"),
+            'echo "123"',
+        );
 
         await sendVSCodeKeys(":");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", "echo ");
         await sendVSCodeCommand("vscode-neovim.send-cmdline", "<Up>");
         await sendVSCodeCommand("vscode-neovim.send-cmdline", "<Up>");
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
-        assert.equal(await client.commandOutput("echo getreg(':')"), 'echo "abc"');
+        assert.equal(
+            await client.commandOutput("echo getreg(':')"),
+            'echo "abc"',
+        );
 
         await sendVSCodeKeys(":");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", "echo ");
@@ -53,7 +62,10 @@ describe("Command line", () => {
         await sendVSCodeCommand("vscode-neovim.send-cmdline", "<Up>");
         await sendVSCodeCommand("vscode-neovim.send-cmdline", "<Down>");
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
-        assert.equal(await client.commandOutput("echo getreg(':')"), 'echo "abc"');
+        assert.equal(
+            await client.commandOutput("echo getreg(':')"),
+            'echo "abc"',
+        );
 
         await sendVSCodeKeys(":");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", "echo");
@@ -73,7 +85,10 @@ describe("Command line", () => {
         await sendVSCodeCommand("vscode-neovim.send-cmdline", "<C-w>");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", '"');
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
-        assert.equal(await client.commandOutput("echo getreg(':')"), 'echo "abc "');
+        assert.equal(
+            await client.commandOutput("echo getreg(':')"),
+            'echo "abc "',
+        );
 
         await sendVSCodeKeys(":");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", 'echo "abc 123');
@@ -104,7 +119,11 @@ describe("Command line", () => {
     });
 
     it("Supports C-l", async () => {
-        await openTextDocument({ content: ["1abc", "", "2abc blah", "3abc blah blah", "4abc"].join("\n") });
+        await openTextDocument({
+            content: ["1abc", "", "2abc blah", "3abc blah blah", "4abc"].join(
+                "\n",
+            ),
+        });
 
         await sendVSCodeKeys("/");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", "1");
@@ -145,7 +164,10 @@ describe("Command line", () => {
         await sendVSCodeKeys(":");
         await sendVSCodeCommand("vscode-neovim.test-cmdline", "normal i");
         await sendVSCodeCommand("vscode-neovim.send-cmdline", "<C-r>=");
-        await sendVSCodeCommand("vscode-neovim.test-cmdline", "'hello, ' . 'world!'");
+        await sendVSCodeCommand(
+            "vscode-neovim.test-cmdline",
+            "'hello, ' . 'world!'",
+        );
         // Commit both levels of the cmdline
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
@@ -164,7 +186,10 @@ describe("Command line", () => {
         //
         // the 'ch' in "echo" will put us into insert mode. Broken code would insert " 'hello, world'"
         // NOTE: the string concat of "<" . "CR>" is deliberate, to prevent nvim from sending a <CR> too early.
-        await sendNeovimKeys(client, String.raw`:call feedkeys(":echo 'hello, world'<" . "CR>")<CR>`);
+        await sendNeovimKeys(
+            client,
+            String.raw`:call feedkeys(":echo 'hello, world'<" . "CR>")<CR>`,
+        );
         await assertContent(
             {
                 content: ["some text"],
@@ -178,7 +203,10 @@ describe("Command line", () => {
 
         // We do this with sendNeovimKeys so everything is done quickly
         // A bad implementation will close the command line too early before the commit-cmdline takes effect
-        await sendNeovimKeys(client, String.raw`:call feedkeys(":call setline(1, 'hello, world')")<CR>`);
+        await sendNeovimKeys(
+            client,
+            String.raw`:call feedkeys(":call setline(1, 'hello, world')")<CR>`,
+        );
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
         await assertContent(
             {
@@ -192,7 +220,10 @@ describe("Command line", () => {
         await openTextDocument({ content: "some text" });
 
         // Set up the command. This could be done by something like a plugin or a mapped key
-        await sendNeovimKeys(client, String.raw`:call setline(1, 'hello, world'`);
+        await sendNeovimKeys(
+            client,
+            String.raw`:call setline(1, 'hello, world'`,
+        );
         await sendVSCodeCommand("vscode-neovim.test-cmdline", ")");
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");
 
@@ -208,11 +239,17 @@ describe("Command line", () => {
         await openTextDocument({ content: "some text" });
         // Set up the command. This could be done by something like a plugin or a mapped key
         // Put in the command and press esc, so that it's the "last" command, even though we abort
-        await sendNeovimKeys(client, String.raw`:call setline(1, 'hello, world'`);
+        await sendNeovimKeys(
+            client,
+            String.raw`:call setline(1, 'hello, world'`,
+        );
         await sendNeovimKeys(client, String.raw`<ESC>`);
 
         // Set up the command again
-        await sendNeovimKeys(client, String.raw`:call setline(1, 'hello, world'`);
+        await sendNeovimKeys(
+            client,
+            String.raw`:call setline(1, 'hello, world'`,
+        );
         // A user presses )
         await sendVSCodeCommand("vscode-neovim.test-cmdline", ")");
         await sendVSCodeCommand("vscode-neovim.commit-cmdline");

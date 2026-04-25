@@ -45,7 +45,10 @@ export class HighlightManager implements Disposable {
         return this.highlightGrids.get(gridId)!;
     }
 
-    private async handleRedraw({ name, args }: EventBusData<"redraw">): Promise<void> {
+    private async handleRedraw({
+        name,
+        args,
+    }: EventBusData<"redraw">): Promise<void> {
         // Mark our `redraw` event as processing, so that `redraw-flush` will wait for all async
         // execution to complete.
         //
@@ -97,17 +100,27 @@ export class HighlightManager implements Disposable {
         this.highlightGrids.forEach((grid) => grid.handleRedrawFlush());
     }
 
-    private handleAttrDefine(id: number, attrs: VimHighlightUIAttributes, groups: string[]) {
+    private handleAttrDefine(
+        id: number,
+        attrs: VimHighlightUIAttributes,
+        groups: string[],
+    ) {
         this.groupStore.add(id, attrs, groups);
     }
 
-    private handleGridLine(gridId: number, row: number, col: number, cells: VimCell[]): void {
+    private handleGridLine(
+        gridId: number,
+        row: number,
+        col: number,
+        cells: VimCell[],
+    ): void {
         const gridOffset = this.main.viewportManager.getGridOffset(gridId);
         const drawLine = gridOffset.line + row;
         // Offset for the statuscolumn
         const startCol = col + gridOffset.character;
         // No reason for startCol to equal STATUSCOLUMN_WIDTH
-        const vimCol = startCol < STATUSCOLUMN_WIDTH ? 0 : startCol - STATUSCOLUMN_WIDTH;
+        const vimCol =
+            startCol < STATUSCOLUMN_WIDTH ? 0 : startCol - STATUSCOLUMN_WIDTH;
         if (startCol < STATUSCOLUMN_WIDTH) {
             // leading dashes could be combined with statuscolumn
             const delta = STATUSCOLUMN_WIDTH - startCol;
